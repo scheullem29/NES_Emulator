@@ -3,9 +3,8 @@ package core;
 
 public class CPU 
 {
-	private byte accumulator, indexRegX, indexRegY, stackPtr;
+	private byte accumulator, indexRegX, indexRegY, stackPtr, statusReg;
 	private short pgrmCtr;
-	private boolean signFlag, overflowFlag, breakFlag, decimalModeFlag, interruptFlag, zeroFlag, carryFlag;
 	private byte[] CPUmemory;
 	private byte[] PPUmemory;
 	private byte[] OAMmemory;
@@ -17,12 +16,7 @@ public class CPU
 		this.indexRegY = 0x00;
 		this.stackPtr = 0x00;
 		this.pgrmCtr = 0x00;
-		this.signFlag = false;
-		this.overflowFlag = false;
-		this.breakFlag = false;
-		this.decimalModeFlag = false; //not used by NES
-		this.interruptFlag = false;
-		this.carryFlag = false;
+		this.statusReg = 0x00;
 		this.CPUmemory = new byte[0x10000];
 		this.PPUmemory = new byte[0x4000];
 		this.OAMmemory = new byte[0x100];
@@ -32,6 +26,60 @@ public class CPU
 		CPUmemory[20] = 0x01;
 		CPUmemory[21] = 0x10;
 		
+	}
+		
+	/**
+	 * Shows the status of the sign flag.
+	 * @return true = set, false = clear
+	 */
+	public boolean signFlag()
+	{
+		return( (statusReg&0x80) == 0x80);
+	}
+	
+	/**
+	 * Shows the status of the overflow flag.
+	 * @return true = set, false = clear
+	 */
+	public boolean overflowFlag()
+	{
+		return( (statusReg&0x40) == 0x40);
+	}
+	
+	/**
+	 * Shows break status
+	 * @return true = set, false = clear
+	 */
+	public boolean breakStatus()
+	{
+		return( (statusReg&0x10) == 0x10);
+	}
+	
+	/**
+	 * Shows the interrupt disabled status
+	 * @return true = interrupts disabled, false = interrupts enabled
+	 */
+	public boolean interruptDisableStatus()
+	{
+		return( (statusReg&0x04) == 0x04);
+	}
+	
+	/**
+	 * Shows the zero flag status
+	 * @return true = set, false = clear
+	 */
+	public boolean zeroFlag()
+	{
+		return( (statusReg&0x02) == 0x02);
+	}
+	
+	/**
+	 * Shows the carry flag status
+	 * @return true = set, false = clear
+	 */
+	public boolean carryFlag()
+	{
+		return( (statusReg&0x01) == 0x01);
 	}
 	
 	/**
