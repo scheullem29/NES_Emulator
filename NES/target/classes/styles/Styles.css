@@ -1,0 +1,14 @@
+.button {
+    -fx-font-weight: bold;
+}
+#keyBindingPane{
+	-fx-background-image: url("Images/Controller.jpg");
+	-fx-background-color: white;
+	-fx-background-repeat: stretch;
+	-fx-background-size: 450 222;
+	-fx-background-position: top center;
+}
+#Keys{
+	-fx-background-color: white;
+}
+
