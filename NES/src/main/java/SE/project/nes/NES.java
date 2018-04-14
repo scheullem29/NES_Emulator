@@ -46,10 +46,11 @@ public class NES extends Application {
             MenuItem load1 = new MenuItem("Load Rom");
             load1.setOnAction((ActionEvent event) -> {
                 fc.setTitle("Select Rom File");
-                f = fc.showOpenDialog(stage);
-                //System.out.println(f.getAbsoluteFile());
-                NR = new NESreader(f.getAbsolutePath());
+                //f = fc.showOpenDialog(stage);
+                //NR = new NESreader(f.getAbsolutePath());
+                NR = new NESreader("C:\\Users\\Gregory Hyde\\Documents\\NetBeansProjects\\NES\\src\\main\\resources\\ROMS\\Super Mario Bros (E).nes");
                 NR.readFile(nes);
+                nes.printMemory();
         });
             //Exit function
             MenuItem load2 = new MenuItem("Exit");
@@ -77,28 +78,35 @@ public class NES extends Application {
                 ImageView left = new ImageView(new Image(getClass().getClassLoader().getResource("styles/Images/left.jpg").toExternalForm()));
                 TextField leftField = new TextField(defaultKeys.get(1));
                 leftField.setMaxSize(65,24);
+                textEvent(leftField);
                 ImageView down = new ImageView(new Image(getClass().getClassLoader().getResource("styles/Images/down.jpg").toExternalForm()));
                 TextField downField = new TextField(defaultKeys.get(2));
                 downField.setMaxSize(65,24);
+                textEvent(downField);
                 ImageView right = new ImageView(new Image(getClass().getClassLoader().getResource("styles/Images/right.jpg").toExternalForm()));
                 TextField rightField = new TextField(defaultKeys.get(3));
                 rightField.setMaxSize(65,24);
+                textEvent(rightField);
                 Text select = new Text("Select");
                 select.setFont(Font.font(null, FontWeight.BOLD, 24));
                 TextField selectField = new TextField(defaultKeys.get(4));
                 selectField.setMaxSize(65,24);
+                textEvent(selectField);
                 Label start = new Label("Start");
                 start.setFont(Font.font(null, FontWeight.BOLD, 24));
                 TextField startField = new TextField(defaultKeys.get(5));
                 startField.setMaxSize(65,24);
+                textEvent(startField);
                 Label A = new Label("A");
                 A.setFont(Font.font(null, FontWeight.BOLD, 24));
                 TextField AField = new TextField(defaultKeys.get(6));
                 AField.setMaxSize(65,24);
+                textEvent(AField);
                 Label B = new Label("B");
                 B.setFont(Font.font(null, FontWeight.BOLD, 24));
                 TextField BField = new TextField(defaultKeys.get(7));
                 BField.setMaxSize(65,24);
+                textEvent(BField);
                 
                 KBKeys.add(up, 0, 0);
                 KBKeys.add(upField, 1, 0);
@@ -139,7 +147,33 @@ public class NES extends Application {
     
     public void textEvent(TextField tf){
         tf.setOnKeyPressed((KeyEvent ke) -> {
-            String oldKey = tf.getText();
+            //System.out.println(ke.getCode());
+            if(ke.getCode().toString().equals("SHIFT") || ke.getCode().toString().equals("CAPS") || ke.getCode().toString().equals("TAB") || ke.getCode().toString().equals("BACK_SPACE")){
+                //ignore
+            } else {
+                String oldKey = tf.getText();
+                if(oldKey.charAt(0) >= 97 && oldKey.charAt(0) <= 122){
+                    oldKey = "" + Character.toUpperCase(oldKey.charAt(0));
+                }
+                int keyIndex = defaultKeys.indexOf(oldKey);
+                tf.clear();
+                String key = ke.getText();
+                boolean goodKey = checkKey(key);
+                if(goodKey){
+                    if(key.charAt(0) >= 97 && key.charAt(0) <= 122){
+                        key = "" + Character.toUpperCase(key.charAt(0));
+                    }
+                    else if(key.charAt(0) >= 48 && key.charAt(0) <= 57){
+                        key = "" + key.charAt(0);
+                    }
+                    defaultKeys.set(keyIndex, key);
+                    System.out.println(defaultKeys.toString());
+                } else {
+                    tf.setText(oldKey);
+                }
+            }
+            
+            /*String oldKey = tf.getText();
             if(oldKey.charAt(0) >= 97 && oldKey.charAt(0) <= 122){
                 oldKey = "" + Character.toUpperCase(oldKey.charAt(0));
             }
@@ -154,8 +188,30 @@ public class NES extends Application {
             
             defaultKeys.set(keyIndex, key);
             System.out.print(defaultKeys.toString());
-            
+            */
         });
+    }
+    
+    public boolean checkKey(String key){
+        boolean goodKey = false;
+        boolean dupCheck = false;
+        if(key.charAt(0) == 32 || key.charAt(0) == 39 || (key.charAt(0) >= 44 && key.charAt(0) <= 57) 
+        || key.charAt(0) ==59 || key.charAt(0) == 61 || (key.charAt(0) >= 65 && key.charAt(0) <= 93)
+        || key.charAt(0) == 96 || (key.charAt(0) >= 97 && key.charAt(0) <= 122)){
+            goodKey = true;
+            if(key.charAt(0) >= 97 && key.charAt(0) <= 122){
+                key = "" + Character.toUpperCase(key.charAt(0));
+            }
+            for(String defaultKey : defaultKeys){
+                if(defaultKey.charAt(0) == key.charAt(0)){
+                    dupCheck = true;
+                }
+            }
+        }
+        if(dupCheck){
+            goodKey = false;
+        }
+        return goodKey;
     }
 
     public static void main(String[] args) {
