@@ -148,6 +148,7 @@ public class NESreader
 					 * Either way the leftover space in $6000 - $7fff is filled with
 					 * mirrored data. 
 					 */
+                                        nes.setpgrmCtr(0x8000);
 					if(batteryBacked) 
 					{
 						int loop = (8/prgROMblocks) - 1;

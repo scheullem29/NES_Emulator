@@ -167,4 +167,97 @@ public class Interpreter
 	**	Add 1 clock cycle if branch occurs to location in same page. Add 2 clock cycles if branch to another page occurs.											
 
 	**/
+
+    void readInstructions(CPU nes) {
+        
+        int limit = 0x8010;
+
+        
+        while(nes.getpgrmCtr() <= limit){ //;)
+            String bite = (String.format("%02X", nes.getCPUmemory()[nes.getpgrmCtr()]));
+            System.out.println(bite + " " + nes.getpgrmCtr() + " " + limit);
+            processByte(bite, nes);
+        }
+    }
+
+    private void processByte(String temp, CPU nes) {
+        switch (temp) {
+            case "78": //sei
+                nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                nes.setcycleCtr(nes.getcycleCtr() + 2);
+                nes.interruptDisableStatusSet();
+                break;
+            case "D8": //cld
+                nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                nes.setcycleCtr(nes.getcycleCtr() + 2);
+                nes.decimalModeFlagClear();  
+                break;
+            case "A9": //lda
+                nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                nes.setcycleCtr(nes.getcycleCtr() + 2);
+                byte tmp = nes.getCPUmemory()[nes.getpgrmCtr()];
+                nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                nes.setAccumulator(tmp);
+                if(tmp < 0)
+                {
+                    nes.signFlagSet();
+                }
+                else
+                {
+                    nes.signFlagClear();
+                }
+                if(tmp == 0)
+                {
+                    nes.zeroFlagSet();
+                }
+                else
+                {
+                    nes.zeroFlagClear();
+                }
+                break;
+            case "8D": //sta
+                nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                nes.setcycleCtr(nes.getcycleCtr() + 4);
+                byte tmp1 = nes.getCPUmemory()[nes.getpgrmCtr()];
+                nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                byte tmp2 = nes.getCPUmemory()[nes.getpgrmCtr()];
+                nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                int tmp3 = nes.absoluteAddressing(tmp1, tmp2);
+                nes.getCPUmemory()[tmp3] = nes.getAccumulator();
+                break;
+            case "A2": //ldx
+                nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                nes.setcycleCtr(nes.getcycleCtr() + 2);
+                tmp = nes.getCPUmemory()[nes.getpgrmCtr()];
+                nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                nes.setIndexRegX(tmp);
+                if(tmp < 0)
+                {
+                    nes.signFlagSet();
+                }
+                else
+                {
+                    nes.signFlagClear();
+                }
+                if(tmp == 0)
+                {
+                    nes.zeroFlagSet();
+                }
+                else
+                {
+                    nes.zeroFlagClear();
+                }
+                break;
+            case "9A":  //txs
+                nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                nes.setcycleCtr(nes.getcycleCtr() + 2);
+                nes.setStackPointer(nes.getIndexRegX());
+                nes.printInfo();
+                break;
+            default:
+                nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                System.out.println(temp);
+        }
+            
+    }
 }
