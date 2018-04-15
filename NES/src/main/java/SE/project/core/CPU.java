@@ -3,7 +3,7 @@ package SE.project.core;
 
 public class CPU 
 {
-	private byte accumulator, indexRegX, indexRegY, stackPtr, statusReg;
+    	private byte accumulator, indexRegX, indexRegY, stackPtr, statusReg;
 	private int pgrmCtr;
         private int cycleCtr = 0;
 	private byte[] CPUmemory;
@@ -181,7 +181,7 @@ public class CPU
         
         public void interruptDisableStatusClear()
         {
-            statusReg = (byte)(statusReg|0x0fb);
+            statusReg = (byte)(statusReg&0x0fb);
         }
         
 	/**
@@ -267,10 +267,10 @@ public class CPU
 	 * @param value address that register X shall be added to
 	 * @return the indexed address
 	 */
-	protected int indexedAddressingAbsoluteX(int value)
+	protected int indexedAddressingAbsoluteX(byte low, byte high)
 	{
 		
-		return ((((value&0xff)<<8)|((value&0xff00)>>8)) + (indexRegX & 0xff))&(0xffff); //masking reg X to prevent any issues with the two's complement representations padding the front bits with 1s
+		return (((((int)high)<<8)|((int)low)) + (indexRegX & 0xff))&(0xffff); //masking reg X to prevent any issues with the two's complement representations padding the front bits with 1s
 	}
 	
 	/**
@@ -279,9 +279,9 @@ public class CPU
 	 * @param value address that register Y shall be added to
 	 * @return the indexed address
 	 */
-	protected int indexedAddressingAbsoluteY(int value)
+	protected int indexedAddressingAbsoluteY(byte low, byte high)
 	{
-		return ((((value&0xff)<<8)|((value&0xff00)>>8)) + (indexRegY & 0xff))&(0xffff); //masking reg Y to prevent any issues with the two's complement representations padding the front bits with 1s
+		return (((((int)high)<<8)|((int)low)) + (indexRegY & 0xff))&(0xffff); //masking reg Y to prevent any issues with the two's complement representations padding the front bits with 1s
 	}
 	
 	/**
@@ -289,9 +289,9 @@ public class CPU
 	 * @param value Location in memory of desired address where value is the low byte and value + 1 is the high byte.
 	 * @return the indirect address
 	 */
-	protected int indirectAddressing(int value)
+	protected int indirectAddressing(byte low, byte high)
 	{
-		return ( (CPUmemory[(((value&0xff)<<8)|((value&0xff00)>>8))+1] << 8) | (CPUmemory[(((value&0xff)<<8)|((value&0xff00)>>8))] & 0xff) ); //masking the low byte memory to prevent issues with two's complement representations padding the front bits with 1s
+		return ( (CPUmemory[((((int)high)<<8)|((int)low))+1] << 8) | (CPUmemory[((((int)high)<<8)|((int)low))] & 0xff) ); //masking the low byte memory to prevent issues with two's complement representations padding the front bits with 1s
 	}
 	
 	/**
