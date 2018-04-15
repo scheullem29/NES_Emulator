@@ -192,10 +192,50 @@ public class Interpreter
                 nes.setcycleCtr(nes.getcycleCtr() + 2);
                 nes.decimalModeFlagClear();  
                 break;
-            case "A9": //lda
+	    case "A9": case "A5": case "B5": case "AD": 
+            case "BD": case "B9": case "A1": case "B1": //lda 
                 nes.setpgrmCtr(nes.getpgrmCtr() + 1);
-                nes.setcycleCtr(nes.getcycleCtr() + 2);
-                byte tmp = nes.getCPUmemory()[nes.getpgrmCtr()];
+                byte tmp = 0;
+                switch (temp) {
+                    case "A9": //immediate
+                        tmp = nes.getCPUmemory()[nes.getpgrmCtr()];
+                        nes.setcycleCtr(nes.getcycleCtr() + 2);
+                        break;
+                    case "A5": //zero page
+                        tmp = nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]];
+                        nes.setcycleCtr(nes.getcycleCtr() + 3);
+                        break;
+                    case "B5": // indexed Addressing Zero Page
+                        tmp = nes.getCPUmemory()[nes.indexedAddressingZeroPage(nes.getCPUmemory()[nes.getpgrmCtr()])];
+                        nes.setcycleCtr(nes.getcycleCtr() + 4);
+                        break;
+                    case "AD": // absolute addressing
+                        tmp = nes.getCPUmemory()[nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
+                        nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                        nes.setcycleCtr(nes.getcycleCtr() + 4);
+                        break;
+                    case "BD": // indexed addressing absolute x
+                        tmp = nes.getCPUmemory()[nes.indexedAddressingAbsoluteX(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
+                        nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                        nes.setcycleCtr(nes.getcycleCtr() + 4); //TODO this could be one more if it passes a page boundry (have to look up what that is)
+                        break;
+                    case "B9": // indexed addressing absolute y
+                        tmp = nes.getCPUmemory()[nes.indexedAddressingAbsoluteY(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
+                        nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                        nes.setcycleCtr(nes.getcycleCtr() + 4); //TODO this could be one more if it passes a page boundry (have to look up what that is)
+                        break;
+                    case "A1": // pre indexed indirect
+                        tmp = nes.getCPUmemory()[nes.preIndexedIndirectAddressing(nes.getpgrmCtr())];
+                        nes.setcycleCtr(nes.getcycleCtr() + 6);
+                        break;
+                    case "B1": // post indexed indirect
+                        tmp = nes.getCPUmemory()[nes.postIndexedIndirectAddressing(nes.getpgrmCtr())];
+                        nes.setcycleCtr(nes.getcycleCtr() + 5); //TODO this could be one more if it passes a page boundry (have to look up what that is)
+                        break;
+                    default:
+                        System.out.println("LDA error");
+                        break;
+                }
                 nes.setpgrmCtr(nes.getpgrmCtr() + 1);
                 nes.setAccumulator(tmp);
                 if(tmp < 0)
@@ -214,8 +254,7 @@ public class Interpreter
                 {
                     nes.zeroFlagClear();
                 }
-                break;
-            case "8D": //sta
+                break;            case "8D": //sta
                 nes.setpgrmCtr(nes.getpgrmCtr() + 1);
                 nes.setcycleCtr(nes.getcycleCtr() + 4);
                 byte tmp1 = nes.getCPUmemory()[nes.getpgrmCtr()];
