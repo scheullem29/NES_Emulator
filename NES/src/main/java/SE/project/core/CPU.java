@@ -49,36 +49,36 @@ public class CPU
         }
         
 
-    public void setIndexRegX(byte x) 
-    {
-        this.indexRegX = x;
-    }
-    
-    public byte getIndexRegX()
-    {
-        return this.indexRegX;
-    }
-    
-    public void setIndexRegY(byte y)
-    {
-        this.indexRegY = y;
-    }
-    
-    public byte getIndexRegY()
-    {
-        return this.indexRegY;
-    }
-    
-    public void setStackPointer(byte val)
-    {
-        this.stackPtr = val;
-    }
-    
-    public byte getStackPointer()
-    {
-        return this.stackPtr;
-    }
-            
+        public void setIndexRegX(byte x) 
+        {
+            this.indexRegX = x;
+        }
+
+        public byte getIndexRegX()
+        {
+            return this.indexRegX;
+        }
+
+        public void setIndexRegY(byte y)
+        {
+            this.indexRegY = y;
+        }
+
+        public byte getIndexRegY()
+        {
+            return this.indexRegY;
+        }
+
+        public void setStackPointer(byte val)
+        {
+            this.stackPtr = val;
+        }
+
+        public byte getStackPointer()
+        {
+            return this.stackPtr;
+        }
+
         public byte[] getCPUmemory(){
             return CPUmemory;
         }
@@ -230,7 +230,7 @@ public class CPU
 	 * @param value contents of register X will have this value added to it for the low byte and this value + 1 for the high byte
 	 * @return the pre-indexed indirect address.
 	 */
-	protected int preIndexedIndirectAddressing(int value)
+	protected int preIndexedIndirectAddressing(byte value)
 	{
 		return ((CPUmemory[(indexRegX & 0xff)+(value+1)]<<8|(CPUmemory[(indexRegX & 0xff)+value] & 0xff)) & 0xffff); //masking reg X and memory contents to prevent any issues with the two's complement representations padding the front bits with 1
 	}
@@ -244,7 +244,7 @@ public class CPU
 	 * @param value address location in memory for the low bytes of the address to be added to Y. Value +1 is the high bytes of the address.
 	 * @return the post-indexed indirect address.
 	 */
-	protected int postIndexedIndirectAddressing(int value)
+	protected int postIndexedIndirectAddressing(byte value)
 	{
 		return ((((CPUmemory[value+1] << 8)|(CPUmemory[value] & 0xff)) + (indexRegY & 0xff)) & 0xffff); //masking reg Y and CPUmemory[value] to prevent any issues with the two's complement representations padding the front bits with 1s
 	}
@@ -256,11 +256,23 @@ public class CPU
 	 * @param value value to be added to contents of register X
 	 * @return the indexed address.
 	 */
-	protected int indexedAddressingZeroPage(int value)
+	protected int indexedAddressingZeroPageX(byte value)
 	{
 		return (value + (indexRegX & 0xff))&(0xff); //masking reg X to prevent any issues with the two's complement representations padding the front bits with 1s
 	}
 	
+        /**
+	 * Calculates the address for indexed addressing with zero page. ASM ex: LDX $20, Y
+	 * Takes the value passed in and adds it to the value of index register Y. Only returns a one byte number.
+	 * Ignores any carryover.
+	 * @param value value to be added to contents of register T
+	 * @return the indexed address.
+	 */
+	protected int indexedAddressingZeroPageY(byte value)
+	{
+		return (value + (indexRegY & 0xff))&(0xff); //masking reg X to prevent any issues with the two's complement representations padding the front bits with 1s
+	}
+        
 	/**
 	 * Calculates the address for indexed addressing with absolute addressing and the X register. ASM ex: AND $3232,X
 	 * Takes the value passed and adds it the the value of index register X. Ignores any carryover.
