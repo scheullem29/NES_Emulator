@@ -120,8 +120,8 @@ public class CPUTest {
         result = instance.postIndexedIndirectAddressing(value);
         assertEquals(expResult, result);
         
-        value = 1;
-        instance.setIndexRegY((byte)0x00);
+        value = 0;
+        instance.setIndexRegY((byte)0x01);
         instance.getCPUmemory()[0]=(byte)0xff;
         instance.getCPUmemory()[1]=(byte)0xff;
         expResult = 0x0000;
