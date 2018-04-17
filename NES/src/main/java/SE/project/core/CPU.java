@@ -232,7 +232,8 @@ public class CPU
 	 */
 	protected int preIndexedIndirectAddressing(byte value)
 	{
-		return ((CPUmemory[(indexRegX & 0xff)+(value+1)]<<8|(CPUmemory[(indexRegX & 0xff)+value] & 0xff)) & 0xffff); //masking reg X and memory contents to prevent any issues with the two's complement representations padding the front bits with 1
+                int place = (indexRegX + value) & 0xff;
+		return (((CPUmemory[place+1]  <<8)|CPUmemory[place]) & 0xffff); //masking reg X and memory contents to prevent any issues with the two's complement representations padding the front bits with 1
 	}
 	
 	/**
@@ -246,7 +247,7 @@ public class CPU
 	 */
 	protected int postIndexedIndirectAddressing(byte value)
 	{
-		return ((((CPUmemory[value+1] << 8)|(CPUmemory[value] & 0xff)) + (indexRegY & 0xff)) & 0xffff); //masking reg Y and CPUmemory[value] to prevent any issues with the two's complement representations padding the front bits with 1s
+		return ((((CPUmemory[(value & 0xff)+1] << 8)|(CPUmemory[value & 0xff] & 0xff)) + (indexRegY & 0xff)) & 0xffff); //masking reg Y and CPUmemory[value] to prevent any issues with the two's complement representations padding the front bits with 1s
 	}
 	
 	/**
@@ -281,8 +282,7 @@ public class CPU
 	 */
 	protected int indexedAddressingAbsoluteX(byte low, byte high)
 	{
-		
-		return (((((int)high)<<8)|((int)low)) + (indexRegX & 0xff))&(0xffff); //masking reg X to prevent any issues with the two's complement representations padding the front bits with 1s
+		return ( ((((int)high)<<8)| (((int)low)&0xff)) + (indexRegX & 0xff) )&(0xffff); //masking reg X to prevent any issues with the two's complement representations padding the front bits with 1s
 	}
 	
 	/**
@@ -293,7 +293,7 @@ public class CPU
 	 */
 	protected int indexedAddressingAbsoluteY(byte low, byte high)
 	{
-		return (((((int)high)<<8)|((int)low)) + (indexRegY & 0xff))&(0xffff); //masking reg Y to prevent any issues with the two's complement representations padding the front bits with 1s
+		return (((((int)high)<<8)| (((int)low)&0xff)) + (indexRegY & 0xff))&(0xffff); //masking reg Y to prevent any issues with the two's complement representations padding the front bits with 1s
 	}
 	
 	/**
@@ -303,7 +303,7 @@ public class CPU
 	 */
 	protected int indirectAddressing(byte low, byte high)
 	{
-		return ( (CPUmemory[((((int)high)<<8)|((int)low))+1] << 8) | (CPUmemory[((((int)high)<<8)|((int)low))] & 0xff) ); //masking the low byte memory to prevent issues with two's complement representations padding the front bits with 1s
+		return ( ((CPUmemory[((high & 0xff)<<8)|((low&0xff)+1)] &0xff) << 8) | (CPUmemory[((high & 0xff)<<8)|(low&0xff)] & 0xff) ); //masking the low byte memory to prevent issues with two's complement representations padding the front bits with 1s
 	}
 	
 	/**
@@ -326,7 +326,7 @@ public class CPU
         protected int absoluteAddressing(byte low, byte high)
         {
             int tmp = (int) high << 8;
-            return(tmp|low);
+            return( (tmp|low)& 0xffff);
         }
         
         public void printInfo(){
