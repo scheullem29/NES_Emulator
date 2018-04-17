@@ -299,14 +299,30 @@ public class CPUTest {
     @Test
     public void testIndirectAddressing() {
         System.out.println("indirectAddressing");
+        CPU instance = new CPU();
         byte low = 0;
         byte high = 0;
-        CPU instance = new CPU();
-        int expResult = 0;
+        instance.getCPUmemory()[0] = 0x00;
+        instance.getCPUmemory()[1] = (byte)0xff;
+        int expResult = 0xff00;
         int result = instance.indirectAddressing(low, high);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+
+        low = 0x00;
+        high = 0x40;
+        instance.getCPUmemory()[0x4000] = 0x00;
+        instance.getCPUmemory()[0x4001] = (byte)0xff;
+        expResult = 0xff00;
+        result = instance.indirectAddressing(low, high);
+        assertEquals(expResult, result);
+        
+        low = 0x00;
+        high = (byte)0x80;
+        instance.getCPUmemory()[0x8000] = 0x00;
+        instance.getCPUmemory()[0x8001] = (byte)0xff;
+        expResult = 0xff00;
+        result = instance.indirectAddressing(low, high);
+        assertEquals(expResult, result);
     }
 
     /**
@@ -315,13 +331,24 @@ public class CPUTest {
     @Test
     public void testRelativeAddressing() {
         System.out.println("relativeAddressing");
-        int value = 0;
         CPU instance = new CPU();
-        int expResult = 0;
+        byte value = 0x44;
+        int expResult = 0x46;
+        instance.setpgrmCtr(0);
         int result = instance.relativeAddressing(value);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        
+        value = (byte)0xf8;
+        expResult = 0x18;
+        instance.setpgrmCtr(0x20);
+        result = instance.relativeAddressing(value);
+        assertEquals(expResult, result);
+        
+        value = (byte)0x00;
+        expResult = 0x2;
+        instance.setpgrmCtr(0x00);
+        result = instance.relativeAddressing(value);
+        assertEquals(expResult, result);
     }
 
     /**
@@ -330,14 +357,24 @@ public class CPUTest {
     @Test
     public void testAbsoluteAddressing() {
         System.out.println("absoluteAddressing");
+        CPU instance = new CPU();
         byte low = 0;
         byte high = 0;
-        CPU instance = new CPU();
         int expResult = 0;
         int result = instance.absoluteAddressing(low, high);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        
+        low = 0x40;
+        high = 0x00;
+        expResult = 0x0040;
+        result = instance.absoluteAddressing(low, high);
+        assertEquals(expResult, result);
+        
+        low = 0x40;
+        high = (byte)0x80;
+        expResult = 0x8040;
+        result = instance.absoluteAddressing(low, high);
+        assertEquals(expResult, result);
     }
     
 }
