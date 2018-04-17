@@ -313,7 +313,7 @@ public class CPU
 	 * @param value The byte given with the branch instruction
 	 * @return The offset to adjust the program counter by.
 	 */
-	protected int relativeAddressing(int value)
+	protected int relativeAddressing(byte value)
 	{
 		int adjust = value;
 		if( (value & 0x80) == 0x80) //if negative
