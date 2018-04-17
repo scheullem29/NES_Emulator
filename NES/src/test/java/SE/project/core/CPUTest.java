@@ -339,7 +339,7 @@ public class CPUTest {
         assertEquals(expResult, result);
         
         value = (byte)0xf8;
-        expResult = 0x18;
+        expResult = 0x1a;
         instance.setpgrmCtr(0x20);
         result = instance.relativeAddressing(value);
         assertEquals(expResult, result);
