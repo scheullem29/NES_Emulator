@@ -10,6 +10,7 @@ public class CPU
 	private byte[] PPUmemory;
 	private byte[] OAMmemory;
         private Interpreter Inter;
+        private boolean pageBoundryCrossed = false;
 	
 	public CPU()
 	{
@@ -25,6 +26,11 @@ public class CPU
                 Inter = new Interpreter();
 		
 	}
+        
+        public boolean pageBoundryCrossed()
+        {
+            return this.pageBoundryCrossed;
+        }
         
         public void setcycleCtr(int cycles){
             cycleCtr = cycles;
@@ -248,6 +254,11 @@ public class CPU
 	 */
 	protected int postIndexedIndirectAddressing(byte value)
 	{
+                pageBoundryCrossed = false;
+                if(((CPUmemory[value & 0xff] & 0xff) + (indexRegY & 0xff)) > 0xff)
+                {
+                    pageBoundryCrossed = true;
+                }
 		return ((((CPUmemory[(value & 0xff)+1] << 8)|(CPUmemory[value & 0xff] & 0xff)) + (indexRegY & 0xff)) & 0xffff); //masking reg Y and CPUmemory[value] to prevent any issues with the two's complement representations padding the front bits with 1s
 	}
 	
@@ -283,6 +294,11 @@ public class CPU
 	 */
 	protected int indexedAddressingAbsoluteX(byte low, byte high)
 	{
+                pageBoundryCrossed = false;
+                if(((((int)low) & 0xff)+(indexRegX & 0xff)) > 0xff)
+                {
+                    pageBoundryCrossed = true;
+                }
 		return ( ((((int)high)<<8)| (((int)low)&0xff)) + (indexRegX & 0xff) )&(0xffff); //masking reg X to prevent any issues with the two's complement representations padding the front bits with 1s
 	}
 	
@@ -294,6 +310,11 @@ public class CPU
 	 */
 	protected int indexedAddressingAbsoluteY(byte low, byte high)
 	{
+                pageBoundryCrossed = false;
+                if(((((int)low) & 0xff)+(indexRegY & 0xff)) > 0xff)
+                {
+                    pageBoundryCrossed = true;
+                }
 		return (((((int)high)<<8)| (((int)low)&0xff)) + (indexRegY & 0xff))&(0xffff); //masking reg Y to prevent any issues with the two's complement representations padding the front bits with 1s
 	}
 	
