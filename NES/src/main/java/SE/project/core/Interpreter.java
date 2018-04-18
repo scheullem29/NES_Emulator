@@ -230,12 +230,20 @@ public class Interpreter
                     case "BD": // indexed addressing absolute x
                         tmp = nes.getCPUmemory()[nes.indexedAddressingAbsoluteX(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
                         nes.setpgrmCtr(nes.getpgrmCtr() + 1);
-                        nes.setcycleCtr(nes.getcycleCtr() + 4); //TODO this could be one more if it passes a page boundry (have to look up what that is)
+                        nes.setcycleCtr(nes.getcycleCtr() + 4);
+                        if(nes.pageBoundryCrossed())
+                        {
+                            nes.setcycleCtr(nes.getcycleCtr() +1);
+                        }
                         break;
                     case "B9": // indexed addressing absolute y
                         tmp = nes.getCPUmemory()[nes.indexedAddressingAbsoluteY(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
                         nes.setpgrmCtr(nes.getpgrmCtr() + 1);
-                        nes.setcycleCtr(nes.getcycleCtr() + 4); //TODO this could be one more if it passes a page boundry (have to look up what that is)
+                        nes.setcycleCtr(nes.getcycleCtr() + 4); 
+                        if(nes.pageBoundryCrossed())
+                        {
+                            nes.setcycleCtr(nes.getcycleCtr() +1);
+                        }
                         break;
                     case "A1": // pre indexed indirect
                         tmp = nes.getCPUmemory()[nes.preIndexedIndirectAddressing(nes.getCPUmemory()[nes.getpgrmCtr()])];
@@ -243,7 +251,11 @@ public class Interpreter
                         break;
                     case "B1": // post indexed indirect
                         tmp = nes.getCPUmemory()[nes.postIndexedIndirectAddressing(nes.getCPUmemory()[nes.getpgrmCtr()])];
-                        nes.setcycleCtr(nes.getcycleCtr() + 5); //TODO this could be one more if it passes a page boundry (have to look up what that is)
+                        nes.setcycleCtr(nes.getcycleCtr() + 5); 
+                        if(nes.pageBoundryCrossed())
+                        {
+                            nes.setcycleCtr(nes.getcycleCtr() +1);
+                        }
                         break;
                     default:
                         System.out.println("LDA error");
