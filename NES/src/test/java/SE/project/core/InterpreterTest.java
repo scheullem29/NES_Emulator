@@ -31,6 +31,7 @@ public class InterpreterTest {
     /**
      * Test of readInstructions method, of class Interpreter.
      */
+    /*
     @org.junit.Test
     public void testReadInstructions() {
         System.out.println("readInstructions");
@@ -39,6 +40,6 @@ public class InterpreterTest {
         instance.readInstructions(nes);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
-    }
+    }*/
     
 }
