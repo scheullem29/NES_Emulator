@@ -76,7 +76,7 @@ public class CPU
 
         public short getStackPointer()
         {
-            return (0x0100 & (this.stackPtr & 0xff);
+            return (short)(0x0100 & (this.stackPtr & 0xff));
         }
 
         public byte[] getCPUmemory(){
