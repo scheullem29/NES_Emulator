@@ -5,6 +5,9 @@ public class Interpreter
 
 	/*
 	OPCODE	HEX	ADDRESSING		LEN	CPU	S	V	B	D	I	Z	C 	IN ENGLISH
+	
+	GREG
+	
 	ADC 	69	Immediate 		2	2	x	x				x	x	Add the immediate data, with carry, to those of the accumulator
 	ADC 	65	Zero Page 		2	3	x	x				x	x	Add contents of memory location, with carry, to those of the accumulator
 	ADC 	75	Zero Page, X 	2	4	x	x				x	x	Add contents of memory location, with carry, to those of the accumulator
@@ -41,6 +44,10 @@ public class Interpreter
 	CLD		D8	None			1	2				0				Clear decimal mode (0) NOT USED IN THE NES.
 	CLI 	58	None			1	2					0			Enable interrupts by claring the interrupt disabled bit of status register (0).
 	CLV 	B8	None			1	2		0						Clear the overflow flag (0)
+	
+	
+	MARY
+	
 	CMP 	C9	Immediate 		2	2	x					x	x	Compare the contents of the accumulator with the immediate data. Only the status bits are affected.
 	CMP 	C5	Zero Page 		2	3	x					x	x	Compare the contents of the accumulator with those of memory location. Only the status bits are affected.
 	CMP 	D5	Zero Page, X 	2	4	x					x	x	Compare the contents of the accumulator with those of memory location. Only the status bits are affected.
@@ -77,6 +84,9 @@ public class Interpreter
 	INY 	C8	None			1	2	x					x		Increment contents of the Y register.
 	JMP 	6C	Indirect 		3	5								Jump to new location, using extended or indirect addressing
 	JMP 	4C	Absolute 		3	3								Jump to new location, using extended or indirect addressing
+	
+	TONY
+	
 	JSR 	20	None			3	6								Jump to subroutine beginning at address given in bytes 2 and 3 of the inctruction. Note that the stored program counter points to the last byte of the JSR inctruction.
 	LDA 	A9	Immediate 		2	2	x					x		Load the accumulator with immediate data.
 	LDA 	A5	Zero Page 		2	3	x					x		Load the accumulator for memory.
@@ -119,6 +129,9 @@ public class Interpreter
 	ROL 	36	Zero Page, X 	2	6	x					x	x	Rotate contents of memory location left through carry. Index through the x register only.
 	ROL 	2E	Absolute 		2	6	x					x	x	Rotate contents of memory location left through carry. Index through the x register only.
 	ROL 	3E	Absolute, X 	2	7	x					x	x	Rotate contents of memory location left through carry. Index through the x register only.
+	
+	ROMAN
+	
 	ROR 	6A	Accumulator 	1	2	x					x	x	Rotate contents of the accumulator right through carry.
 	ROR 	66	Zero Page 		2	5	x					x	x	Rotate contents of memory location right through carry. Index through the x register only.
 	ROR 	76	Zero Page, X 	2	6	x					x	x	Rotate contents of memory location right through carry. Index through the x register only.
