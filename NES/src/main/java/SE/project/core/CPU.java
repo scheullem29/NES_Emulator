@@ -74,9 +74,9 @@ public class CPU
             this.stackPtr = val;
         }
 
-        public byte getStackPointer()
+        public short getStackPointer()
         {
-            return this.stackPtr;
+            return (0x0100 & (this.stackPtr & 0xff);
         }
 
         public byte[] getCPUmemory(){
@@ -86,6 +86,7 @@ public class CPU
         public byte[] getPPUmemory(){
             return PPUmemory;
         }
+	
         public void setpgrmCtr(int pgrmCtr){
             this.pgrmCtr = pgrmCtr;
         }
