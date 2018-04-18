@@ -48,7 +48,7 @@ public class NES extends Application {
                 fc.setTitle("Select Rom File");
                 //f = fc.showOpenDialog(stage);
                 //NR = new NESreader(f.getAbsolutePath());
-                NR = new NESreader("C:\\Users\\Gregory Hyde\\Documents\\NetBeansProjects\\NES\\src\\main\\resources\\ROMS\\Super Mario Bros (E).nes");
+                NR = new NESreader("src\\main\\resources\\ROMS\\Super Mario Bros (E).nes");
                 NR.readFile(nes);
                 nes.printMemory();
         });
