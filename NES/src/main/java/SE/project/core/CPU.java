@@ -27,6 +27,31 @@ public class CPU
 		
 	}
         
+        public void increasePgrmCtr(int amt)
+        {
+            this.pgrmCtr = pgrmCtr + amt;
+        }
+        
+        public void increaseCycleCtr(int amt)
+        {
+            this.cycleCtr = cycleCtr + amt;
+        }   
+        
+        public byte getStackPointerByte()
+        {
+            return this.stackPtr;
+        }
+        
+        public byte getStatusReg()
+        {
+            return this.statusReg;
+        }
+        
+        public void setStatusReg(byte val)
+        {
+            this.statusReg = val;
+        }
+        
         public boolean pageBoundryCrossed()
         {
             return this.pageBoundryCrossed;
