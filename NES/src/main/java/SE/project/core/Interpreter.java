@@ -689,6 +689,314 @@ public class Interpreter
                         break;
                 }
                 break;
+			
+	case "C9" : case "C5" : case "D5" : case "CD" :
+        case "DD" : case "D9" : case "C1" : case "D1" : //cmp
+                nes.increasePgrmCtr(1);
+                tmp = nes.getAccumulator();
+                switch (temp)
+                {
+                    case "C9" : // immediate
+                        tmp1 = nes.getCPUmemory()[nes.getpgrmCtr()];
+                        /*
+                            compare tmp to tmp1 and change status bits
+                        */
+                        nes.increasePgrmCtr(1);
+                        nes.increaseCycleCtr(2);
+                        break;
+                    case "C5" : // zero page
+                        tmp1 = nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]];
+                        /*
+                            compare tmp to tmp1 and change status bits
+                        */
+                        nes.increasePgrmCtr(1);
+                        nes.increaseCycleCtr(3);
+                        break;
+                    case "D5" : // zero page, x
+                        tmp1 = nes.getCPUmemory()[nes.indexedAddressingZeroPageX(nes.getCPUmemory()[nes.getpgrmCtr()])];
+                        /*
+                            compare tmp to tmp1 and change status bits
+                        */
+                        nes.increasePgrmCtr(1);
+                        nes.increaseCycleCtr(4);
+                        break;
+                    case "CD" : // absolute
+                        tmp1 = nes.getCPUmemory()[nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
+                        /*
+                            compare tmp to tmp1 and change status bits
+                        */
+                        nes.increasePgrmCtr(2);
+                        nes.increaseCycleCtr(4);
+                        break;
+                    case "DD" : // absolute, x
+                        tmp1 = nes.getCPUmemory()[nes.indexedAddressingAbsoluteX(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
+                        /*
+                            compare tmp to tmp1 and change status bits
+                        */
+                        nes.increasePgrmCtr(2);
+                        nes.increaseCycleCtr(4);
+                        break;
+                    case "D9" : // absolute, y
+                        tmp1 = nes.getCPUmemory()[nes.indexedAddressingAbsoluteY(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
+                        /*
+                            compare tmp to tmp1 and change status bits
+                        */
+                        nes.increasePgrmCtr(2);
+                        nes.increaseCycleCtr(4);
+                        break;
+                    case "C1" : // (indirect, x)
+                        tmp1 = nes.getCPUmemory()[nes.preIndexedIndirectAddressing(nes.getCPUmemory()[nes.getpgrmCtr()])];
+                        /*
+                            compare tmp to tmp1 and change status bits
+                        */
+                        nes.increasePgrmCtr(1);
+                        nes.increaseCycleCtr(6);
+                        break;
+                    case "D1" : // (indirect), y
+                        tmp1 = nes.getCPUmemory()[nes.postIndexedIndirectAddressing(nes.getCPUmemory()[nes.getpgrmCtr()])];
+                        /*
+                            compare tmp to tmp1 and change status bits
+                        */
+                        nes.increasePgrmCtr(1);
+                        nes.increaseCycleCtr(5);
+                        break;
+                    default : 
+                        System.out.println("CMP error");
+                        break;
+                }   
+                break;
+            case "E0" : case "E4" : case "EC" : // cpx
+                tmp = nes.getIndexRegX();
+                nes.increasePgrmCtr(1);
+                switch (temp) {
+                    case "E0" : // immediate
+                        tmp1 = nes.getCPUmemory()[nes.getpgrmCtr()];
+                        /*
+                            compare tmp to tmp1 and change status bits
+                        */
+                        nes.increasePgrmCtr(1);
+                        nes.increaseCycleCtr(2);
+                        break;
+                    case "E4" : // zero page
+                        tmp1 = nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]];
+                        /*
+                            compare tmp to tmp1 and change status bits
+                        */
+                        nes.increasePgrmCtr(1);
+                        nes.increaseCycleCtr(3);
+                        break;
+                    case "EC" : // absolute
+                        tmp1 = nes.getCPUmemory()[nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
+                        /*
+                            compare tmp to tmp1 and change status bits
+                        */
+                        nes.increasePgrmCtr(2);
+                        nes.increaseCycleCtr(4);
+                        break;
+                    default:
+                        System.out.println("CPX error");
+                        break;
+                            
+                }
+                break;
+            case "C0" : case "C4" : case "CC" : // cpy
+                tmp = nes.getIndexRegY();
+                nes.increasePgrmCtr(1);
+                switch (temp) {
+                    case "C0" : // immediate
+                        tmp1 = nes.getCPUmemory()[nes.getpgrmCtr()];
+                        /*
+                            compare tmp to tmp1 and change status bits
+                        */
+                        nes.increasePgrmCtr(1);
+                        nes.increaseCycleCtr(2);
+                        break;
+                    case "C4" : // zero page
+                        tmp1 = nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]];
+                        /*
+                            compare tmp to tmp1 and change status bits
+                        */
+                        nes.increasePgrmCtr(1);
+                        nes.increaseCycleCtr(3);
+                        break;
+                    case "CC" : // absolute
+                        tmp1 = nes.getCPUmemory()[nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
+                        /*
+                            compare tmp to tmp1 and change status bits
+                        */
+                        nes.increasePgrmCtr(2);
+                        nes.increaseCycleCtr(4);
+                        break;
+                    default:
+                        System.out.println("CPY error");
+                        break;
+                }
+                break;
+            case "C6" : case "D6" : case "CE" : case "DE" : // dec
+                nes.increasePgrmCtr(1);
+                switch (temp) {
+                    case "C6" : // zero page
+                        tmp = nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]] - 1;
+                        nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]] = tmp;
+                        nes.increasePgrmCtr(1);
+                        nes.increaseCycleCtr(5);
+                        break;
+                    case "D6" : // zero page, x
+                        tmp = nes.getCPUmemory()[nes.indexedAddressingZeroPageX(nes.getCPUmemory()[nes.getpgrmCtr()])] - 1;
+                        nes.getCPUmemory()[nes.indexedAddressingZeroPageX(nes.getCPUmemory()[nes.getpgrmCtr()])] = tmp;
+                        nes.increasePgrmCtr(1);
+                        nes.increaseCycleCtr(6);
+                        break;
+                    case "CE" : // absolute
+                        tmp = nes.getCPUmemory()[nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])] - 1;
+                        nes.getCPUmemory()[nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])] = tmp;
+                        nes.increasePgrmCtr(2);
+                        nes.increaseCycleCtr(6);
+                        break;
+                    case "DE" : // absolute, x
+                        tmp = nes.getCPUmemory()[nes.indexedAddressingAbsoluteX(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])] - 1;
+                        nes.getCPUmemory()[nes.indexedAddressingAbsoluteX(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])] = tmp;
+                        nes.increasePgrmCtr(2);
+                        nes.increaseCycleCtr(7);
+                        break;
+                    default: 
+                        System.out.println("DEC error");
+                        break;
+                }
+                break;
+            case "CA" : // dex
+                tmp = nes.getIndexRegX() - 1;
+                nes.getIndexRegX() = tmp;
+                nes.increasePgrmCtr(1);
+                nes.increaseCycleCtr(2);
+                break;
+            case "88" : // dey
+                tmp = nes.getIndexRegY() - 1;
+                nes.getIndexRegY() = tmp;
+                nes.increasePgrmCtr(1);
+                nes.increaseCycleCtr(2);
+                break;
+            case "49" : case "45" : case "55" : case "4D" :
+            case "5D" : case "59" : case "41" : case "51" : // eor
+                tmp = nes.getAccumulator();
+                nes.increasePgrmCtr(1);
+                switch (temp) {
+                    case "49" : // immediate
+                        tmp1 = nes.getCPUmemory()[nes.getpgrmCtr()];
+                        nes.getCPUmemory()[nes.getpgrmCtr()] = tmp ^ tmp1; 
+                        nes.increasePgrmCtr(1);
+                        nes.increaseCycleCtr(2);
+                        break;
+                    case "45" : // zero page
+                        tmp1 = nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]];
+                        nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]] = tmp ^ tmp1;
+                        nes.increasePgrmCtr(1);
+                        nes.increaseCycleCtr(3);
+                        break;
+                    case "55" : // zero page, x
+                        tmp1 = nes.getCPUmemory()[nes.indexedAddressingZeroPageX(nes.getCPUmemory()[nes.getpgrmCtr()])];
+                        nes.getCPUmemory()[nes.indexedAddressingZeroPageX(nes.getCPUmemory()[nes.getpgrmCtr()])] = tmp ^ tmp1; 
+                        nes.increasePgrmCtr(1);
+                        nes.increaseCycleCtr(4);
+                        break;
+                    case "4D" : // absolute
+                        tmp1 = nes.getCPUmemory()[nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
+                        nes.getCPUmemory()[nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])] = tmp ^ tmp1;
+                        nes.increasePgrmCtr(2);
+                        nes.increaseCycleCtr(4);
+                        break;
+                    case "5D" : // absolute, x
+                        tmp1 = nes.getCPUmemory()[nes.indexedAddressingAbsoluteX(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
+                        nes.getCPUmemory()[nes.indexedAddressingAbsoluteX(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])] = tmp ^ tmp1;
+                        nes.increasePgrmCtr(2);
+                        nes.increaseCycleCtr(4);
+                        break;
+                    case "59" : // absolute, y
+                        tmp1 = nes.getCPUmemory()[nes.indexedAddressingAbsoluteY(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
+                        nes.getCPUmemory()[nes.indexedAddressingAbsoluteY(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])] = tmp ^ tmp1;
+                        nes.increasePgrmCtr(2);
+                        nes.increaseCycleCtr(4);
+                        break;
+                    case "41" : // (indirect, x)
+                        tmp1 = nes.getCPUmemory()[nes.preIndexedIndirectAddressing(nes.getCPUmemory()[nes.getpgrmCtr()])];
+                        nes.getCPUmemory()[nes.preIndexedIndirectAddressing(nes.getCPUmemory()[nes.getpgrmCtr()])] = tmp ^ tmp1; 
+                        nes.increasePgrmCtr(1);
+                        nes.increaseCycleCtr(6);
+                        break;
+                    case "51" : // (indirect), y
+                        tmp1 = nes.getCPUmemory()[nes.postIndexedIndirectAddressing(nes.getCPUmemory()[nes.getpgrmCtr()])];
+                        nes.getCPUmemory()[nes.postIndexedIndirectAddressing(nes.getCPUmemory()[nes.getpgrmCtr()])] = tmp ^ tmp1; 
+                        nes.increasePgrmCtr(1);
+                        nes.increaseCycleCtr(5);
+                        break;
+                    default : 
+                        System.out.println("EOR error");
+                        break;
+                }
+                break;
+            case "E6" : case "F6" : case "EE" : case "FE" : // inc
+                nes.increasePgrmCtr(1);
+                switch (temp) {
+                    case "E6" : // zero page
+                        tmp = nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]] + 1;
+                        nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]] = tmp; 
+                        nes.increasePgrmCtr(1);
+                        nes.increaseCycleCtr(5);
+                        break;
+                    case "F6" : // zero page, x
+                        tmp = nes.getCPUmemory()[nes.indexedAddressingZeroPageX(nes.getCPUmemory()[nes.getpgrmCtr()])] + 1;
+                        nes.getCPUmemory()[nes.indexedAddressingZeroPageX(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])] = tmp;
+                        nes.increasePgrmCtr(1);
+                        nes.increaseCycleCtr(6);
+                        break;
+                    case "EE" : // absolute
+                        tmp = nes.getCPUmemory()[nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])] + 1;
+                        nes.getCPUmemory()[nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])] = tmp; 
+                        nes.increasePgrmCtr(2);
+                        nes.increaseCycleCtr(6);
+                        break;
+                    case "FE" : // absolute, x
+                        tmp = nes.getCPUmemory()[nes.indexedAddressingAbsoluteX(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])] + 1;
+                        nes.getCPUmemory()[nes.indexedAddressingAbsoluteX(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])] = tmp;
+                        nes.increasePgrmCtr(3);
+                        nes.increaseCycleCtr(7);
+                        break;
+                    default :
+                        System.out.println("INC error");
+                        break;
+                }
+                break;
+            case "E8" : // inx
+                tmp = nes.getIndexRegX();
+                nes.getIndexRegX() = nes.getIndexRegX() + 1;
+                nes.increasePgrmCtr(1);
+                nes.increaseCycleCtr(2);
+                break;
+            case "C8" : // iny
+                tmp = nes.getIndexRegY();
+                nes.getIndexRegY() = nes.getIndexRegY() + 1;
+                nes.increasePgrmCtr(1);
+                nes.increaseCycleCtr(2);
+                break;
+            case "6C" : case "4C" : // jmp
+                nes.increasePgrmCtr(1);
+                switch (temp) {
+                    case "6C" : // indirect
+                        nes.setpgrmCtr(nes.preIndexedIndirectAddressing(nes.getCPUmemory()[nes.getpgrmCtr()]));                                           
+                        nes.setcycleCtr(nes.getcycleCtr()+5);
+                        break;
+                    case "4C" : // absolute
+                        low = nes.getCPUmemory()[nes.getpgrmCtr()];
+                        nes.setpgrmCtr(nes.getpgrmCtr()+1);
+                        high = nes.getCPUmemory()[nes.getpgramCtr()];
+                        nes.setpgrmCtr(nes.absoluteAddressing(low, high));
+                        nes.setcycleCtr(nes.getcycleCtr()+3);
+                        break;
+                    default :
+                        System.out.println("JMP error");
+                        break;
+                }
+                break;
             default:
                 nes.setpgrmCtr(nes.getpgrmCtr() + 1);
                 System.out.println(temp);
