@@ -694,142 +694,164 @@ public class Interpreter
         case "DD" : case "D9" : case "C1" : case "D1" : //cmp
                 nes.increasePgrmCtr(1);
                 tmp = nes.getAccumulator();
+                tmp1 = 0;
+                tmp2 = 0;
                 switch (temp)
                 {
                     case "C9" : // immediate
                         tmp1 = nes.getCPUmemory()[nes.getpgrmCtr()];
-                        /*
-                            compare tmp to tmp1 and change status bits
-                        */
+                        tmp2 = (byte)(tmp - tmp1);
                         nes.increasePgrmCtr(1);
                         nes.increaseCycleCtr(2);
                         break;
                     case "C5" : // zero page
                         tmp1 = nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]];
-                        /*
-                            compare tmp to tmp1 and change status bits
-                        */
+                        tmp2 = (byte)(tmp - tmp1);
                         nes.increasePgrmCtr(1);
                         nes.increaseCycleCtr(3);
                         break;
                     case "D5" : // zero page, x
                         tmp1 = nes.getCPUmemory()[nes.indexedAddressingZeroPageX(nes.getCPUmemory()[nes.getpgrmCtr()])];
-                        /*
-                            compare tmp to tmp1 and change status bits
-                        */
+                        tmp2 = (byte)(tmp - tmp1);
                         nes.increasePgrmCtr(1);
                         nes.increaseCycleCtr(4);
                         break;
                     case "CD" : // absolute
                         tmp1 = nes.getCPUmemory()[nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
-                        /*
-                            compare tmp to tmp1 and change status bits
-                        */
+                        tmp2 = (byte)(tmp - tmp1);
                         nes.increasePgrmCtr(2);
                         nes.increaseCycleCtr(4);
                         break;
                     case "DD" : // absolute, x
                         tmp1 = nes.getCPUmemory()[nes.indexedAddressingAbsoluteX(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
-                        /*
-                            compare tmp to tmp1 and change status bits
-                        */
+                        tmp2 = (byte)(tmp - tmp1);
                         nes.increasePgrmCtr(2);
                         nes.increaseCycleCtr(4);
                         break;
                     case "D9" : // absolute, y
                         tmp1 = nes.getCPUmemory()[nes.indexedAddressingAbsoluteY(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
-                        /*
-                            compare tmp to tmp1 and change status bits
-                        */
+                        tmp2 = (byte)(tmp - tmp1);
                         nes.increasePgrmCtr(2);
                         nes.increaseCycleCtr(4);
                         break;
                     case "C1" : // (indirect, x)
                         tmp1 = nes.getCPUmemory()[nes.preIndexedIndirectAddressing(nes.getCPUmemory()[nes.getpgrmCtr()])];
-                        /*
-                            compare tmp to tmp1 and change status bits
-                        */
+                        tmp2 = (byte)(tmp - tmp1);
                         nes.increasePgrmCtr(1);
                         nes.increaseCycleCtr(6);
                         break;
                     case "D1" : // (indirect), y
                         tmp1 = nes.getCPUmemory()[nes.postIndexedIndirectAddressing(nes.getCPUmemory()[nes.getpgrmCtr()])];
-                        /*
-                            compare tmp to tmp1 and change status bits
-                        */
+                        tmp2 = (byte)(tmp - tmp1);
                         nes.increasePgrmCtr(1);
                         nes.increaseCycleCtr(5);
                         break;
                     default : 
                         System.out.println("CMP error");
                         break;
-                }   
+                }
+                if ((tmp2 & 0x80) == 0x80){
+                    nes.signFlagSet();
+                } else {
+                    nes.signFlagClear();
+                }
+                if (tmp2 == 0){
+                    nes.ZeroFlagSet();
+                } else {
+                    nes.ZeroFlagClear();
+                }
+                if (tmp1 > tmp) {
+                    nes.CarryFlagSet();
+                } else {
+                    nes.CarryFlagClear();
+                }
                 break;
             case "E0" : case "E4" : case "EC" : // cpx
                 tmp = nes.getIndexRegX();
+                tmp1 = 0;
+                tmp2 = 0;
                 nes.increasePgrmCtr(1);
                 switch (temp) {
                     case "E0" : // immediate
                         tmp1 = nes.getCPUmemory()[nes.getpgrmCtr()];
-                        /*
-                            compare tmp to tmp1 and change status bits
-                        */
+                        tmp2 = (byte)(tmp - tmp1);
                         nes.increasePgrmCtr(1);
                         nes.increaseCycleCtr(2);
                         break;
                     case "E4" : // zero page
                         tmp1 = nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]];
-                        /*
-                            compare tmp to tmp1 and change status bits
-                        */
+                        tmp2 = (byte)(tmp - tmp1);
                         nes.increasePgrmCtr(1);
                         nes.increaseCycleCtr(3);
                         break;
                     case "EC" : // absolute
                         tmp1 = nes.getCPUmemory()[nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
-                        /*
-                            compare tmp to tmp1 and change status bits
-                        */
+                        tmp2 = (byte)(tmp - tmp1);
                         nes.increasePgrmCtr(2);
                         nes.increaseCycleCtr(4);
                         break;
                     default:
                         System.out.println("CPX error");
-                        break;
-                            
+                        break;                            
+                }
+                if ((tmp2 & 0x80) == 0x80){
+                    nes.signFlagSet();
+                } else {
+                    nes.signFlagClear();
+                }
+                if (tmp2 == 0){
+                    nes.ZeroFlagSet();
+                } else {
+                    nes.ZeroFlagClear();
+                }
+                if (tmp1 > tmp) {
+                    nes.CarryFlagSet();
+                } else {
+                    nes.CarryFlagClear();
                 }
                 break;
             case "C0" : case "C4" : case "CC" : // cpy
                 tmp = nes.getIndexRegY();
+                tmp1 = 0;
+                tmp2 = 0;
                 nes.increasePgrmCtr(1);
                 switch (temp) {
                     case "C0" : // immediate
                         tmp1 = nes.getCPUmemory()[nes.getpgrmCtr()];
-                        /*
-                            compare tmp to tmp1 and change status bits
-                        */
+                        tmp2 = (byte)(tmp - tmp1);
                         nes.increasePgrmCtr(1);
                         nes.increaseCycleCtr(2);
                         break;
                     case "C4" : // zero page
                         tmp1 = nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]];
-                        /*
-                            compare tmp to tmp1 and change status bits
-                        */
+                        tmp2 = (byte)(tmp - tmp1);
                         nes.increasePgrmCtr(1);
                         nes.increaseCycleCtr(3);
                         break;
                     case "CC" : // absolute
                         tmp1 = nes.getCPUmemory()[nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
-                        /*
-                            compare tmp to tmp1 and change status bits
-                        */
+                        tmp2 = (byte)(tmp - tmp1);
                         nes.increasePgrmCtr(2);
                         nes.increaseCycleCtr(4);
                         break;
                     default:
                         System.out.println("CPY error");
                         break;
+                }
+                if ((tmp2 & 0x80) == 0x80){
+                    nes.signFlagSet();
+                } else {
+                    nes.signFlagClear();
+                }
+                if (tmp2 == 0){
+                    nes.ZeroFlagSet();
+                } else {
+                    nes.ZeroFlagClear();
+                }
+                if (tmp1 > tmp) {
+                    nes.CarryFlagSet();
+                } else {
+                    nes.CarryFlagClear();
                 }
                 break;
             case "C6" : case "D6" : case "CE" : case "DE" : // dec
