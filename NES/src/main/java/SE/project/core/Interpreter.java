@@ -216,8 +216,11 @@ public class Interpreter
                 nes.setStackPointer((byte) (nes.getStackPointerByte()-1));
                 nes.getCPUmemory()[nes.getStackPointer()] = (byte) nes.getStatusReg();
                 nes.setStackPointer((byte) (nes.getStackPointerByte()-1));
-                nes.setpgrmCtr((nes.getpgrmCtr() & 0xffff)>>8);
-                nes.setpgrmCtr(nes.getpgrmCtr() & 0xfffe);
+                high = nes.getCPUmemory()[0xffff];
+		low = nes.getCPUmemory()[0xfffe];
+		high = high << 8;
+		high = high | low;
+		nes.setpgrmCtr(high);
                 nes.breakStatusSet();
                 nes.interruptDisableStatusSet();
                 nes.setcycleCtr(nes.getcycleCtr() + 7);
