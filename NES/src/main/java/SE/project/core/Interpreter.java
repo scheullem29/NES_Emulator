@@ -183,12 +183,11 @@ public class Interpreter
 
     void readInstructions(CPU nes) {
         
-        int limit = 0x8010;
 
         
-        while(nes.getpgrmCtr() <= limit){ //;)
+        while(true){ //;)
             String bite = (String.format("%02X", nes.getCPUmemory()[nes.getpgrmCtr()]));
-            System.out.println(bite + " " + nes.getpgrmCtr() + " " + limit);
+            //System.out.println(bite + " " + nes.getpgrmCtr() + " " + limit);
             processByte(bite, nes);
         }
     }
@@ -210,11 +209,11 @@ public class Interpreter
                 nes.setcycleCtr(nes.getcycleCtr() + 2);
                 nes.decimalModeFlagSet();
                 break;
-            case "D8": //cld
+          /*  case "D8": //cld
                 nes.setpgrmCtr(nes.getpgrmCtr() + 1);
                 nes.setcycleCtr(nes.getcycleCtr() + 2);
                 nes.decimalModeFlagClear();  
-                break;
+                break;*/
 		 /*
              * RTI 	40	None			1	6	x	x	x	x	x	x	x	Return from interrupts, restore status.
                RTS 	60	None			1	6								Return from subroutine, incrementing program counter to point to the instruction after the JSR which called the routine.
@@ -248,8 +247,8 @@ public class Interpreter
 	    case "00":
                 nes.setpgrmCtr(nes.getpgrmCtr() + 2);
                 int pc = nes.getpgrmCtr()&0xffff;
-                byte high = (byte) ((pc & 0xff00)>>8);
-                byte low = (byte) (pc & 0x00ff);
+                high = (byte) ((pc & 0xff00)>>8);
+                low = (byte) (pc & 0x00ff);
                 nes.getCPUmemory()[nes.getStackPointer()] = (byte) high;
                 nes.setStackPointer((byte) (nes.getStackPointerByte()-1));
                 nes.getCPUmemory()[nes.getStackPointer()] = (byte) low;
@@ -642,7 +641,7 @@ public class Interpreter
             case "A9": case "A5": case "B5": case "AD": 
             case "BD": case "B9": case "A1": case "B1": //lda 
                 nes.setpgrmCtr(nes.getpgrmCtr() + 1);
-                byte tmp = 0;
+                tmp = 0;
                 switch (temp) {
                     case "A9": //immediate
                         tmp = nes.getCPUmemory()[nes.getpgrmCtr()];
@@ -733,7 +732,7 @@ public class Interpreter
 	STA 	91	(Indirect), Y           2	6								Store the accumulator to memory.
         */ 
             case "85": case "95": case "8D": case "9D":
-            case "99": case "81": case "81": case "91":
+            case "99": case "81": case "91":
                 
                 nes.setpgrmCtr(nes.getpgrmCtr() + 1);
                 tmp = 0;
@@ -812,7 +811,7 @@ public class Interpreter
                         }
                         break;
                     default:
-                        System.out.println("LDX error");
+                        System.out.println("LDX error" + temp);
                         break;
                 }
                 nes.setpgrmCtr(nes.getpgrmCtr() + 1);
@@ -843,7 +842,8 @@ public class Interpreter
             case "86": case "96": case "8E"://stx
                 nes.setpgrmCtr(nes.getpgrmCtr() + 1);
                 tmp = 0;
-                switch (temp) {
+                switch (temp) 
+                {
                     case "86": //zero page
                         nes.setAccumulator(nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]]);
                         nes.setcycleCtr(nes.getcycleCtr() + 3);
@@ -861,6 +861,7 @@ public class Interpreter
                     default:
                         System.out.println("STX error");
                         break;
+                }
                 /*
                 TAX 	AA	None			1	2	x					x		Set the X register to the accumulator contents.
                 TAY 	A8	None			1	2	x					x		Set the Y register to the accumulator contents.
@@ -881,7 +882,6 @@ public class Interpreter
                 nes.setpgrmCtr(nes.getpgrmCtr() + 1);
                 nes.setcycleCtr(nes.getcycleCtr() + 2);
                 nes.setIndexRegY(nes.getAccumulator());
-                nes.setAccumulator(tmp);
                 break;
             case "BA": //TSX
                 //Set the X register to the stack pointer contents.
@@ -910,10 +910,10 @@ public class Interpreter
                 nes.setAccumulator(nes.getIndexRegY());
                 break;
             case "20": //jsr
-                int pc = (nes.getpgrmCtr()+2)&0xffff;
-                byte high = (byte) ((pc & 0xff00)>>8);
-                byte low = (byte) (pc & 0x00ff);                    //grab program counter + 2 (past the jsr instruction)
-                nes.getCPUmemory()[nes.getStackPointer()] = high;
+                pc = (nes.getpgrmCtr()+2)&0xffff;
+                high = (byte) ((pc & 0xff00)>>8);
+                low = (byte) (pc & 0x00ff);                    //grab program counter + 2 (past the jsr instruction)
+                nes.getCPUmemory()[nes.getStackPointer()] = (byte)high;
                 nes.setStackPointer( (byte) ((nes.getStackPointer() - 1) & 0xff) );
                 nes.getCPUmemory()[nes.getStackPointer()] = low;
                 nes.setStackPointer( (byte) ((nes.getStackPointer() - 1) & 0xff) ); //push the program counter to stack
@@ -921,7 +921,7 @@ public class Interpreter
                 low = nes.getCPUmemory()[nes.getpgrmCtr()];
                 nes.setpgrmCtr(nes.getpgrmCtr()+1);
                 high = nes.getCPUmemory()[nes.getpgrmCtr()];
-                nes.setpgrmCtr(nes.absoluteAddressing(low, high));      // grab the new program counter from the jsr
+                nes.setpgrmCtr(nes.absoluteAddressing(low, (byte)high));      // grab the new program counter from the jsr
                 nes.setcycleCtr(nes.getcycleCtr()+6);  
                 break;
             case "A0": case "A4": case "B4": case "AC": case "BC"://ldy 
@@ -1270,7 +1270,7 @@ public class Interpreter
                 borrow = 1;
             }
             
-            byte ans = (byte) ((tmp&0xff) - borrow - (nes.getAccumulator()&0xff));
+            ans = (byte) ((tmp&0xff) - borrow - (nes.getAccumulator()&0xff));
                             
         /*
         ROR 	6A	Accumulator             1	2	x					x	x	Rotate contents of the accumulator right through carry.
@@ -1385,7 +1385,7 @@ public class Interpreter
                         tmp = nes.getCPUmemory()[nes.indexedAddressingAbsoluteX(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
                         break;
                 }
-                boolean toCarry = false;
+                toCarry = false;
                 if((tmp & 0x80) == 0x80)
                 {
                     toCarry = true;
@@ -1449,12 +1449,12 @@ public class Interpreter
                 }
                 break;
 			
-	case "C9" : case "C5" : case "D5" : case "CD" :
-        case "DD" : case "D9" : case "C1" : case "D1" : //cmp
+            case "C9" : case "C5" : case "D5" : case "CD" :
+            case "DD" : case "D9" : case "C1" : case "D1" : //cmp
                 nes.increasePgrmCtr(1);
                 tmp = nes.getAccumulator();
-                tmp1 = 0;
-                tmp2 = 0;
+                byte tmp1 = 0;
+                byte tmp2 = 0;
                 switch (temp)
                 {
                     case "C9" : // immediate
@@ -1770,7 +1770,7 @@ public class Interpreter
                         low = nes.getCPUmemory()[nes.getpgrmCtr()];
                         nes.setpgrmCtr(nes.getpgrmCtr()+1);
                         high = nes.getCPUmemory()[nes.getpgrmCtr()];
-                        nes.setpgrmCtr(nes.absoluteAddressing(low, high));
+                        nes.setpgrmCtr(nes.absoluteAddressing(low, (byte)high));
                         nes.setcycleCtr(nes.getcycleCtr()+3);
                         break;
                     default :
