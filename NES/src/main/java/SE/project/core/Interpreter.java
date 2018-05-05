@@ -999,6 +999,178 @@ public class Interpreter
                 nes.increasePgrmCtr(1);
                 nes.increaseCycleCtr(4);
                 break;
+			
+	       /*        
+        SBC 	E9	Immediate 		2	2	x	x				x	x	Subtract the immediate data, with borrow, from the accumulator.
+	SBC 	E5	Zero Page 		2	3	x	x				x	x	Subtract contents of memory location, with borrow, from contents of the accumulator.
+	SBC 	F5	Zero Page, X            2	4	x	x				x	x	Subtract contents of memory location, with borrow, from contents of the accumulator.
+	SBC 	ED	Absolute 		3	4	x	x				x	x	Subtract contents of memory location, with borrow, from contents of the accumulator.
+	SBC 	FD	Absolute, X             3	4*	x	x				x	x	Subtract contents of memory location, with borrow, from contents of the accumulator.
+	SBC 	F9	Absolute, Y             3	4*	x	x				x	x	Subtract contents of memory location, with borrow, from contents of the accumulator.
+	SBC 	E1	(Indirect, X)           2	6	x	x				x	x	Subtract contents of memory location, with borrow, from contents of the accumulator.
+	SBC 	F1	(Indirect), Y           2	5*	x	x				x	x	Subtract contents of memory location, with borrow, from contents of the accumulator. 
+        */ 
+        
+            case "E9" : case "E5" : case "F5" : case  "ED": 
+            case "FD" : case "F9" : case "E1" : case "F1": //sbc
+                
+            nes.setpgrmCtr(nes.getpgrmCtr() + 1); // set counter
+            tmp = 0;
+            switch(temp)
+            {
+                case "E9": //immediate
+                    tmp = nes.getCPUmemory()[nes.getpgrmCtr()];
+                    nes.setcycleCtr(nes.getcycleCtr() + 2);
+                    break;                           
+                case "E5": //zero page
+                    tmp = nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]];
+                    nes.setcycleCtr(nes.getcycleCtr() + 3);
+                    break;
+                case "F5": // indexed Addressing Zero Page
+                    tmp = nes.getCPUmemory()[nes.indexedAddressingZeroPageX(nes.getCPUmemory()[nes.getpgrmCtr()])];
+                    nes.setcycleCtr(nes.getcycleCtr() + 4);
+                    break;
+                case "ED": // absolute addressing
+                    tmp = nes.getCPUmemory()[nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
+                    nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                    nes.setcycleCtr(nes.getcycleCtr() + 4);
+                    break;
+                case "FD": // indexed addressing absolute x
+                    tmp = nes.getCPUmemory()[nes.indexedAddressingAbsoluteX(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
+                    nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                    nes.setcycleCtr(nes.getcycleCtr() + 4);
+                    if(nes.pageBoundryCrossed())
+                    {
+                        nes.setcycleCtr(nes.getcycleCtr() +1);
+                    }
+                    break;
+                case "F9": // indexed addressing absolute y
+                    tmp = nes.getCPUmemory()[nes.indexedAddressingAbsoluteY(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
+                    nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                    nes.setcycleCtr(nes.getcycleCtr() + 4); 
+                    if(nes.pageBoundryCrossed())
+                    {
+                        nes.setcycleCtr(nes.getcycleCtr() +1);
+                    }
+                    break;
+                case "E1": // pre indexed indirect
+                    tmp = nes.getCPUmemory()[nes.preIndexedIndirectAddressing(nes.getCPUmemory()[nes.getpgrmCtr()])];
+                    nes.setcycleCtr(nes.getcycleCtr() + 6);
+                    break;
+                case "F1": // post indexed indirect
+                    tmp = nes.getCPUmemory()[nes.postIndexedIndirectAddressing(nes.getCPUmemory()[nes.getpgrmCtr()])];
+                    nes.setcycleCtr(nes.getcycleCtr() + 5); 
+                    if(nes.pageBoundryCrossed())
+                    {
+                        nes.setcycleCtr(nes.getcycleCtr() +1);
+                    }
+                    break;
+                default:
+                    System.out.println("SBC error");
+                    break;
+            }
+            
+            //increment program counter since we had 3
+            nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+            byte borrow = 0;
+            if(!nes.carryFlag()){
+                borrow = 1;
+            }
+            
+            byte ans = (byte) ((tmp&0xff) - borrow - (nes.getAccumulator()&0xff));
+                            
+        /*
+        ROR 	6A	Accumulator             1	2	x					x	x	Rotate contents of the accumulator right through carry.
+	ROR 	66	Zero Page 		2	5	x					x	x	Rotate contents of memory location right through carry. Index through the x register only.
+	ROR 	76	Zero Page, X            2	6	x					x	x	Rotate contents of memory location right through carry. Index through the x register only.
+	ROR 	6E	Absolute 		3	6	x					x	x	Rotate contents of memory location right through carry. Index through the x register only.
+	ROR 	7E	Absolute, X             3	7	x					x	x	Rotate contents of memory location right through carry. Index through the x register only.
+         */        
+            case "6A": case "66": case "76": case "6E": case "7E": // rol
+                nes.increasePgrmCtr(1);
+                tmp = 0;
+                switch(temp)
+                {
+                    case "6A": //accumulator
+                        tmp = nes.getAccumulator();
+                        break;
+                    case "66": //zero page
+                        tmp = nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]];
+                        break;
+                    case "76": //zero page, x
+                        tmp = nes.getCPUmemory()[nes.indexedAddressingZeroPageX(nes.getCPUmemory()[nes.getpgrmCtr()])];
+                        break;
+                    case "6E": //absolute
+                        tmp = nes.getCPUmemory()[nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
+                        break;
+                    case "7E": //absolute, x
+                        tmp = nes.getCPUmemory()[nes.indexedAddressingAbsoluteX(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
+                        break;
+                }
+                boolean toCarry = false;
+                if((tmp & 0x80) == 0x80)
+                {
+                    toCarry = true;
+                }
+                tmp = (byte)(tmp << 1);
+                if(nes.carryFlag())
+                {
+                    tmp = (byte)(tmp + 1);
+                }
+                if(toCarry)
+                {
+                    nes.carryFlagSet();
+                }
+                else
+                {
+                    nes.carryFlagClear();
+                }
+                if((tmp & 0x80) == 0x80)
+                {
+                    nes.signFlagSet();
+                }
+                else
+                {
+                    nes.signFlagClear();
+                }
+                if(tmp == 0)
+                {
+                    nes.zeroFlagSet();
+                }
+                else
+                {
+                    nes.zeroFlagClear();
+                }
+                
+                switch(temp)
+                {
+                    case "6A": //accumulator
+                        nes.setAccumulator(tmp);
+                        nes.increaseCycleCtr(2);
+                        break;
+                    case "66": //zero page
+                        nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]] = tmp;
+                        nes.increasePgrmCtr(1);
+                        nes.increaseCycleCtr(5);
+                        break;
+                    case "76": //zero page, x
+                        nes.getCPUmemory()[nes.indexedAddressingZeroPageX(nes.getCPUmemory()[nes.getpgrmCtr()])] = tmp;
+                        nes.increasePgrmCtr(1);
+                        nes.increaseCycleCtr(6);
+                        break;
+                    case "6E": //absolute
+                        nes.getCPUmemory()[nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])] = tmp;
+                        nes.increasePgrmCtr(2);
+                        nes.increaseCycleCtr(6);
+                        break;
+                    case "7E": //absolute, x
+                        nes.getCPUmemory()[nes.indexedAddressingAbsoluteX(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])] = tmp;
+                        nes.increasePgrmCtr(2);
+                        nes.increaseCycleCtr(7);
+                        break;
+                }
+                break;        
+			
             case "2A": case "26": case "36": case "2E": case "3E": // rol
                 nes.increasePgrmCtr(1);
                 tmp = 0;
