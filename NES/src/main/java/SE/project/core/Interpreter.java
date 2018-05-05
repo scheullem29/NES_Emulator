@@ -204,6 +204,324 @@ public class Interpreter
                 nes.setpgrmCtr(nes.getpgrmCtr() + 1);
                 nes.setcycleCtr(nes.getcycleCtr() + 2);
                 nes.decimalModeFlagClear();  
+                break;		
+	    case "00":
+                nes.setpgrmCtr(nes.getpgrmCtr() + 2);
+                int pc = nes.getpgrmCtr()&0xffff;
+                byte high = (byte) ((pc & 0xff00)>>8);
+                byte low = (byte) (pc & 0x00ff);
+                nes.getCPUmemory()[nes.getStackPointer()] = (byte) high;
+                nes.setStackPointer((byte) (nes.getStackPointerByte()-1));
+                nes.getCPUmemory()[nes.getStackPointer()] = (byte) low;
+                nes.setStackPointer((byte) (nes.getStackPointerByte()-1));
+                nes.getCPUmemory()[nes.getStackPointer()] = (byte) nes.getStatusReg();
+                nes.setStackPointer((byte) (nes.getStackPointerByte()-1));
+                nes.setpgrmCtr((nes.getpgrmCtr() & 0xffff)>>8);
+                nes.setpgrmCtr(nes.getpgrmCtr() & 0xfffe);
+                nes.breakStatusSet();
+                nes.interruptDisableStatusSet();
+                nes.setcycleCtr(nes.getcycleCtr() + 7);
+                break; 
+            case "2C":
+                nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                byte tmp = nes.getCPUmemory()[nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
+                nes.setpgrmCtr(nes.getpgrmCtr() + 2);
+                nes.setAccumulator((byte) (nes.getAccumulator()&tmp));
+                if(nes.getAccumulator() == 0)
+                {
+                    nes.zeroFlagSet();
+                }
+                else
+                {
+                    nes.zeroFlagClear();
+                }
+                if((tmp&0x80) == 0x80){
+                    nes.signFlagSet();
+                } else {
+                    nes.signFlagClear();
+                }
+                if((tmp&0x70) == 0x70){
+                    nes.overflowFlagSet();
+                } else {
+                    nes.overflowFlagClear();
+                }
+                nes.setcycleCtr(nes.getcycleCtr() + 4);
+                break;
+            case "24":
+                nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                tmp = nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]];
+                nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                nes.setAccumulator((byte) (nes.getAccumulator()&tmp));
+                if(nes.getAccumulator() == 0)
+                {
+                    nes.zeroFlagSet();
+                }
+                else
+                {
+                    nes.zeroFlagClear();
+                }
+                if((tmp&0x80) == 0x80){
+                    nes.signFlagSet();
+                } else {
+                    nes.signFlagClear();
+                }
+                if((tmp&0x70) == 0x70){
+                    nes.overflowFlagSet();
+                } else {
+                    nes.overflowFlagClear();
+                }
+                nes.setcycleCtr(nes.getcycleCtr() + 3);
+                break;
+	    case "18": case "D8": case "58": case "B8":
+                nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                nes.setcycleCtr(nes.getcycleCtr() + 2);
+                switch (temp){
+                    case "18":
+                        nes.carryFlagClear();
+                        break;
+                    case "D8":
+                        nes.decimalModeFlagClear();
+                        break;
+                    case "58":
+                        nes.interruptDisableStatusClear();
+                        break;
+                    case "B8":
+                        nes.overflowFlagClear();
+                        break;
+                }
+                break;
+	    case "29": case "25": case "35": case "2D": 
+            case "3D": case "39": case "21": case "31": //AND
+                nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                tmp = 0;
+                switch (temp) {
+                    case "29": //immediate
+                        tmp = nes.getCPUmemory()[nes.getpgrmCtr()];
+                        nes.setcycleCtr(nes.getcycleCtr() + 2);
+                        break;
+                    case "25": //zero page
+                        tmp = nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]];
+                        nes.setcycleCtr(nes.getcycleCtr() + 3);
+                        break;
+                    case "35": // indexed Addressing Zero Page
+                        tmp = nes.getCPUmemory()[nes.indexedAddressingZeroPageX(nes.getCPUmemory()[nes.getpgrmCtr()])];
+                        nes.setcycleCtr(nes.getcycleCtr() + 4);
+                        break;
+                    case "2D": // absolute addressing
+                        tmp = nes.getCPUmemory()[nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
+                        nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                        nes.setcycleCtr(nes.getcycleCtr() + 4);
+                        break;
+                    case "3D": // indexed addressing absolute x
+                        tmp = nes.getCPUmemory()[nes.indexedAddressingAbsoluteX(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
+                        nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                        nes.setcycleCtr(nes.getcycleCtr() + 4);
+                        if(nes.pageBoundryCrossed())
+                        {
+                            nes.setcycleCtr(nes.getcycleCtr() +1);
+                        }
+                        break;
+                    case "39": // indexed addressing absolute y
+                        tmp = nes.getCPUmemory()[nes.indexedAddressingAbsoluteY(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
+                        nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                        nes.setcycleCtr(nes.getcycleCtr() + 4); 
+                        if(nes.pageBoundryCrossed())
+                        {
+                            nes.setcycleCtr(nes.getcycleCtr() +1);
+                        }
+                        break;
+                    case "21": // pre indexed indirect
+                        tmp = nes.getCPUmemory()[nes.preIndexedIndirectAddressing(nes.getCPUmemory()[nes.getpgrmCtr()])];
+                        nes.setcycleCtr(nes.getcycleCtr() + 6);
+                        break;
+                    case "31": // post indexed indirect
+                        tmp = nes.getCPUmemory()[nes.postIndexedIndirectAddressing(nes.getCPUmemory()[nes.getpgrmCtr()])];
+                        nes.setcycleCtr(nes.getcycleCtr() + 5); 
+                        if(nes.pageBoundryCrossed())
+                        {
+                            nes.setcycleCtr(nes.getcycleCtr() +1);
+                        }
+                        break;
+                    default:
+                        System.out.println("AND error");
+                        break;
+                }
+                nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                nes.setAccumulator((byte) (nes.getAccumulator()&tmp));
+                if(nes.getAccumulator() < 0)
+                {
+                    nes.signFlagSet();
+                }
+                else
+                {
+                    nes.signFlagClear();
+                }
+                if(nes.getAccumulator() == 0)
+                {
+                    nes.zeroFlagSet();
+                }
+                else
+                {
+                    nes.zeroFlagClear();
+                }
+                break;
+	    case "69": case "65": case "75": case "6D": 
+            case "7D": case "79": case "61": case "71":
+                nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                tmp = 0;
+                switch (temp) {
+                    case "69": //immediate
+                        tmp = nes.getCPUmemory()[nes.getpgrmCtr()];
+                        nes.setcycleCtr(nes.getcycleCtr() + 2);
+                        break;
+                    case "65": //zero page
+                        tmp = nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]];
+                        nes.setcycleCtr(nes.getcycleCtr() + 3);
+                        break;
+                    case "75": // indexed Addressing Zero Page
+                        tmp = nes.getCPUmemory()[nes.indexedAddressingZeroPageX(nes.getCPUmemory()[nes.getpgrmCtr()])];
+                        nes.setcycleCtr(nes.getcycleCtr() + 4);
+                        break;
+                    case "6D": // absolute addressing
+                        tmp = nes.getCPUmemory()[nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
+                        nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                        nes.setcycleCtr(nes.getcycleCtr() + 4);
+                        break;
+                    case "7D": // indexed addressing absolute x
+                        tmp = nes.getCPUmemory()[nes.indexedAddressingAbsoluteX(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
+                        nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                        nes.setcycleCtr(nes.getcycleCtr() + 4);
+                        if(nes.pageBoundryCrossed())
+                        {
+                            nes.setcycleCtr(nes.getcycleCtr() +1);
+                        }
+                        break;
+                    case "79": // indexed addressing absolute y
+                        tmp = nes.getCPUmemory()[nes.indexedAddressingAbsoluteY(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
+                        nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                        nes.setcycleCtr(nes.getcycleCtr() + 4); 
+                        if(nes.pageBoundryCrossed())
+                        {
+                            nes.setcycleCtr(nes.getcycleCtr() +1);
+                        }
+                        break;
+                    case "61": // pre indexed indirect
+                        tmp = nes.getCPUmemory()[nes.preIndexedIndirectAddressing(nes.getCPUmemory()[nes.getpgrmCtr()])];
+                        nes.setcycleCtr(nes.getcycleCtr() + 6);
+                        break;
+                    case "71": // post indexed indirect
+                        tmp = nes.getCPUmemory()[nes.postIndexedIndirectAddressing(nes.getCPUmemory()[nes.getpgrmCtr()])];
+                        nes.setcycleCtr(nes.getcycleCtr() + 5); 
+                        if(nes.pageBoundryCrossed())
+                        {
+                            nes.setcycleCtr(nes.getcycleCtr() +1);
+                        }
+                        break;
+                    default:
+                        System.out.println("ADC error");
+                        break;
+                }
+                nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                byte carry = 0;
+                if(nes.carryFlag()){
+                    carry = 1;
+                }
+                byte ans = (byte)((tmp&0xff) + carry + (nes.getAccumulator()&0xff));
+                nes.setAccumulator(ans);
+                if((nes.getAccumulator()&0x80) == 0x80)
+                {
+                    nes.signFlagSet();
+                }
+                else
+                {
+                    nes.signFlagClear();
+                }
+                if((nes.getAccumulator()&0x80) == (tmp&0x80)){
+                    byte Overflow = (byte)((ans&0x80) ^ carry);
+                    if(Overflow == 1){
+                        nes.overflowFlagSet();
+                    } else {
+                        nes.overflowFlagClear();
+                    }
+                } else {
+                    nes.overflowFlagClear();
+                }
+                if(tmp == 0)
+                {
+                    nes.zeroFlagSet();
+                }
+                else
+                {
+                    nes.zeroFlagClear();
+                }
+                if((tmp & 0x80) == 0x80)
+                {
+                    nes.carryFlagSet();
+                }
+                else
+                {
+                    nes.carryFlagClear();
+                }
+                break;
+	    case "90": case "B0": case "F0": case "30": 
+            case "D0": case "10": case "50": case "70": //relative branching operations
+                nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                tmp = nes.getCPUmemory()[nes.getpgrmCtr()];
+                boolean branchCondition = false;
+                int incCycles = 2;
+                switch (temp){
+                    case "90": //relative on carry flag clear
+                        if(!nes.carryFlag()){
+                            branchCondition = true;
+                        }
+                        break;
+                    case "B0": //relative on carry flag set
+                        if(nes.carryFlag()){
+                            branchCondition = true;
+                        }
+                        break;
+                    case "F0": //relative on zero flag set
+                        if(nes.zeroFlag()){
+                            branchCondition = true;
+                        }
+                        break;
+                    case "30": //relative on sign flag set
+                        if(nes.signFlag()){
+                            branchCondition = true;
+                        }
+                        break;
+                    case "D0": //relative on zero flag clear
+                        if(!nes.zeroFlag()){
+                            branchCondition = true;
+                        }
+                        break;
+                    case "10": //relative on sign flag clear
+                        if(!nes.signFlag()){
+                            branchCondition = true;
+                        }
+                        break;
+                    case "50": //relative on overflow flag clear
+                        if(!nes.overflowFlag()){
+                            branchCondition = true;
+                        }
+                        break;
+                    case "70": //relative on overflow flag set
+                        if(nes.overflowFlag()){
+                            branchCondition = true;
+                        }
+                        break;
+                }
+                if(branchCondition){
+                    int oldpgrmCtr = nes.getpgrmCtr();
+                    int newpgrmCtr = nes.relativeAddressing(tmp);
+                    nes.setpgrmCtr(newpgrmCtr);
+                    if((oldpgrmCtr & 0x0f00) == (newpgrmCtr & 0x0f00)){
+                        incCycles = incCycles + 1;
+                    } else {
+                        incCycles = incCycles + 2;
+                    }
+                }
+                nes.setcycleCtr(nes.getcycleCtr() + incCycles);
                 break;
             case "A9": case "A5": case "B5": case "AD": 
             case "BD": case "B9": case "A1": case "B1": //lda 
