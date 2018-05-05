@@ -365,6 +365,79 @@ public class Interpreter
                     nes.zeroFlagClear();
                 }
                 break;
+	    case "0A": case "06": case "16": case "0E": case "1E"://ASL
+                nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                tmp = 0;
+                switch(temp) {
+                    case "0A":  //accumulator
+                        tmp = nes.getAccumulator();
+                        break;
+                    case "06":  //zero page
+                        tmp = nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]];
+                        break;
+                    case "16": //zero page,x
+                        tmp = nes.getCPUmemory()[nes.indexedAddressingZeroPageX(nes.getCPUmemory()[nes.getpgrmCtr()])];
+                        break;
+                    case "0E": //absolute
+                        tmp = nes.getCPUmemory()[nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
+                        break;
+                    case "1E": //absolute, x
+                        tmp = nes.getCPUmemory()[nes.indexedAddressingAbsoluteX(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
+                        break;
+                }
+                if((tmp & 0x80) == 0x80)
+                {
+                    nes.carryFlagSet();
+                }
+                else
+                {
+                    nes.carryFlagClear();
+                }
+                tmp = (byte)(tmp << 1);
+                if(tmp == 0)
+                {
+                    nes.zeroFlagSet();
+                }
+                else
+                {
+                    nes.zeroFlagClear();
+                }
+                 if(tmp < 0)
+                {
+                    nes.signFlagSet();
+                }
+                else
+                {
+                    nes.signFlagClear();
+                }
+                switch(temp) {
+                    case "0A":  //accumulator
+                        nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]] = tmp;
+                        nes.increasePgrmCtr(1);
+                        nes.increaseCycleCtr(2);
+                        break;
+                    case "06":  //zero page
+                        nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]] = tmp;
+                        nes.increasePgrmCtr(1);
+                        nes.increaseCycleCtr(5);
+                        break;
+                    case "16": //zero page,x
+                        nes.getCPUmemory()[nes.indexedAddressingZeroPageX(nes.getCPUmemory()[nes.getpgrmCtr()])] = tmp;
+                        nes.increasePgrmCtr(1);
+                        nes.increaseCycleCtr(6);
+                        break;
+                    case "0E": //absolute
+                        nes.getCPUmemory()[nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])] = tmp;
+                        nes.increasePgrmCtr(2);
+                        nes.increaseCycleCtr(6);
+                        break;
+                    case "1E": //absolute, x
+                        nes.getCPUmemory()[nes.indexedAddressingAbsoluteX(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])] = tmp;
+                        nes.increasePgrmCtr(2);
+                        nes.increaseCycleCtr(7);
+                        break;
+                }
+                break;
 	    case "69": case "65": case "75": case "6D": 
             case "7D": case "79": case "61": case "71":
                 nes.setpgrmCtr(nes.getpgrmCtr() + 1);
