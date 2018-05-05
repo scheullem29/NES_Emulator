@@ -204,7 +204,37 @@ public class Interpreter
                 nes.setpgrmCtr(nes.getpgrmCtr() + 1);
                 nes.setcycleCtr(nes.getcycleCtr() + 2);
                 nes.decimalModeFlagClear();  
-                break;		
+                break;
+		 /*
+             * RTI 	40	None			1	6	x	x	x	x	x	x	x	Return from interrupts, restore status.
+               RTS 	60	None			1	6								Return from subroutine, incrementing program counter to point to the instruction after the JSR which called the routine.
+             */ 
+                
+            case "40": //rti
+                nes.setpgrmCtr(nes.getpgrmCtr() +1);
+                nes.setcycleCtr(nes.getcycleCtr() + 6);
+                nes.interruptDisableStatusClear();
+                nes.setStackPointer((byte)(nes.getStackPointerByte() + 1));
+                nes.setStatusReg(nes.getCPUmemory()[nes.getStackPointer()]);
+                nes.setStackPointer((byte)(nes.getStackPointerByte() + 1));
+                byte low = nes.getCPUmemory()[nes.getStackPointer()];
+                nes.setStackPointer((byte)(nes.getStackPointerByte() + 1));
+                int high = nes.getCPUmemory()[nes.getStackPointer()];
+                high = high << 8;
+                high = high | low;
+                nes.setpgrmCtr(high);
+                break;
+            case "60":
+                nes.setpgrmCtr(nes.getpgrmCtr() +1);
+                nes.setcycleCtr(nes.getcycleCtr() + 6);
+                nes.setStackPointer((byte)(nes.getStackPointerByte() + 1));
+                low = nes.getCPUmemory()[nes.getStackPointer()];
+                nes.setStackPointer((byte)(nes.getStackPointerByte() + 1));
+                high = nes.getCPUmemory()[nes.getStackPointer()];
+                high = high << 8;
+                high = high | low;
+                nes.setpgrmCtr(high);
+                break;
 	    case "00":
                 nes.setpgrmCtr(nes.getpgrmCtr() + 2);
                 int pc = nes.getpgrmCtr()&0xffff;
