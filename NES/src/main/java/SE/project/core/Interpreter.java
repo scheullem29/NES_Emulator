@@ -888,13 +888,13 @@ public class Interpreter
                 break;
             case "CA" : // dex
                 tmp = (byte)(nes.getIndexRegX() - 1);
-                nes.getIndexRegX() = tmp;
+                nes.setIndexRegX(tmp);
                 nes.increasePgrmCtr(1);
                 nes.increaseCycleCtr(2);
                 break;
             case "88" : // dey
                 tmp = (byte)(nes.getIndexRegY() - 1);
-                nes.getIndexRegY() = tmp;
+                nes.setIndexRegY(tmp);
                 nes.increasePgrmCtr(1);
                 nes.increaseCycleCtr(2);
                 break;
@@ -905,49 +905,49 @@ public class Interpreter
                 switch (temp) {
                     case "49" : // immediate
                         tmp1 = nes.getCPUmemory()[nes.getpgrmCtr()];
-                        nes.getCPUmemory()[nes.getpgrmCtr()] = tmp ^ tmp1; 
+                        nes.getCPUmemory()[nes.getpgrmCtr()] = (byte) (tmp ^ tmp1); 
                         nes.increasePgrmCtr(1);
                         nes.increaseCycleCtr(2);
                         break;
                     case "45" : // zero page
                         tmp1 = nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]];
-                        nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]] = tmp ^ tmp1;
+                        nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]] = (byte)(tmp ^ tmp1);
                         nes.increasePgrmCtr(1);
                         nes.increaseCycleCtr(3);
                         break;
                     case "55" : // zero page, x
                         tmp1 = nes.getCPUmemory()[nes.indexedAddressingZeroPageX(nes.getCPUmemory()[nes.getpgrmCtr()])];
-                        nes.getCPUmemory()[nes.indexedAddressingZeroPageX(nes.getCPUmemory()[nes.getpgrmCtr()])] = tmp ^ tmp1; 
+                        nes.getCPUmemory()[nes.indexedAddressingZeroPageX(nes.getCPUmemory()[nes.getpgrmCtr()])] = (byte)(tmp ^ tmp1); 
                         nes.increasePgrmCtr(1);
                         nes.increaseCycleCtr(4);
                         break;
                     case "4D" : // absolute
                         tmp1 = nes.getCPUmemory()[nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
-                        nes.getCPUmemory()[nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])] = tmp ^ tmp1;
+                        nes.getCPUmemory()[nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])] = (byte)(tmp ^ tmp1);
                         nes.increasePgrmCtr(2);
                         nes.increaseCycleCtr(4);
                         break;
                     case "5D" : // absolute, x
                         tmp1 = nes.getCPUmemory()[nes.indexedAddressingAbsoluteX(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
-                        nes.getCPUmemory()[nes.indexedAddressingAbsoluteX(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])] = tmp ^ tmp1;
+                        nes.getCPUmemory()[nes.indexedAddressingAbsoluteX(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])] = (byte)(tmp ^ tmp1);
                         nes.increasePgrmCtr(2);
                         nes.increaseCycleCtr(4);
                         break;
                     case "59" : // absolute, y
                         tmp1 = nes.getCPUmemory()[nes.indexedAddressingAbsoluteY(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
-                        nes.getCPUmemory()[nes.indexedAddressingAbsoluteY(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])] = tmp ^ tmp1;
+                        nes.getCPUmemory()[nes.indexedAddressingAbsoluteY(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])] = (byte)(tmp ^ tmp1);
                         nes.increasePgrmCtr(2);
                         nes.increaseCycleCtr(4);
                         break;
                     case "41" : // (indirect, x)
                         tmp1 = nes.getCPUmemory()[nes.preIndexedIndirectAddressing(nes.getCPUmemory()[nes.getpgrmCtr()])];
-                        nes.getCPUmemory()[nes.preIndexedIndirectAddressing(nes.getCPUmemory()[nes.getpgrmCtr()])] = tmp ^ tmp1; 
+                        nes.getCPUmemory()[nes.preIndexedIndirectAddressing(nes.getCPUmemory()[nes.getpgrmCtr()])] = (byte)(tmp ^ tmp1); 
                         nes.increasePgrmCtr(1);
                         nes.increaseCycleCtr(6);
                         break;
                     case "51" : // (indirect), y
                         tmp1 = nes.getCPUmemory()[nes.postIndexedIndirectAddressing(nes.getCPUmemory()[nes.getpgrmCtr()])];
-                        nes.getCPUmemory()[nes.postIndexedIndirectAddressing(nes.getCPUmemory()[nes.getpgrmCtr()])] = tmp ^ tmp1; 
+                        nes.getCPUmemory()[nes.postIndexedIndirectAddressing(nes.getCPUmemory()[nes.getpgrmCtr()])] = (byte)(tmp ^ tmp1); 
                         nes.increasePgrmCtr(1);
                         nes.increaseCycleCtr(5);
                         break;
@@ -967,7 +967,7 @@ public class Interpreter
                         break;
                     case "F6" : // zero page, x
                         tmp = (byte)(nes.getCPUmemory()[nes.indexedAddressingZeroPageX(nes.getCPUmemory()[nes.getpgrmCtr()])] + 1);
-                        nes.getCPUmemory()[nes.indexedAddressingZeroPageX(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])] = tmp;
+                        nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()+1]] = (byte)tmp;
                         nes.increasePgrmCtr(1);
                         nes.increaseCycleCtr(6);
                         break;
@@ -990,13 +990,13 @@ public class Interpreter
                 break;
             case "E8" : // inx
                 tmp = (byte)(nes.getIndexRegX() + 1);
-                nes.getIndexRegX() = tmp;
+                nes.setIndexRegX(tmp);
                 nes.increasePgrmCtr(1);
                 nes.increaseCycleCtr(2);
                 break;
             case "C8" : // iny
                 tmp = (byte)(nes.getIndexRegY() + 1);
-                nes.getIndexRegY() = tmp;
+                nes.setIndexRegY(tmp);
                 nes.increasePgrmCtr(1);
                 nes.increaseCycleCtr(2);
                 break;
