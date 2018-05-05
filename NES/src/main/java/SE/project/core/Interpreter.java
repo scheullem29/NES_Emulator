@@ -200,6 +200,16 @@ public class Interpreter
                 nes.setcycleCtr(nes.getcycleCtr() + 2);
                 nes.interruptDisableStatusSet();
                 break;
+	    case "38": //sec
+                nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                nes.setcycleCtr(nes.getcycleCtr() +2);
+                nes.carryFlagSet();               
+                break;
+            case "F8": //sed
+                nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                nes.setcycleCtr(nes.getcycleCtr() + 2);
+                nes.decimalModeFlagSet();
+                break;
             case "D8": //cld
                 nes.setpgrmCtr(nes.getpgrmCtr() + 1);
                 nes.setcycleCtr(nes.getcycleCtr() + 2);
@@ -704,16 +714,73 @@ public class Interpreter
                     nes.zeroFlagClear();
                 }
                 break;
-            case "8D": //sta
+            //case "8D": //sta
+             //   nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+              //  nes.setcycleCtr(nes.getcycleCtr() + 4);
+               // byte tmp1 = nes.getCPUmemory()[nes.getpgrmCtr()];
+                //nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+               // byte tmp2 = nes.getCPUmemory()[nes.getpgrmCtr()];
+               // nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+               // int tmp3 = nes.absoluteAddressing(tmp1, tmp2);
+               // nes.getCPUmemory()[tmp3] = nes.getAccumulator();
+               // break;
+	/*STA 	85	Zero Page 		2	3								Store the accumulator to memory.
+	STA 	95	Zero Page, X            2	4								Store the accumulator to memory.
+	STA 	8D	Absolute 		3	4								Store the accumulator to memory.
+	STA 	9D	Absolute, X             3	4*								Store the accumulator to memory.
+	STA 	99	Absolute, Y             3	4*								Store the accumulator to memory.
+	STA 	81	(Indirect, X)           2	6								Store the accumulator to memory.
+	STA 	91	(Indirect), Y           2	6								Store the accumulator to memory.
+        */ 
+            case "85": case "95": case "8D": case "9D":
+            case "99": case "81": case "81": case "91":
+                
                 nes.setpgrmCtr(nes.getpgrmCtr() + 1);
-                nes.setcycleCtr(nes.getcycleCtr() + 4);
-                byte tmp1 = nes.getCPUmemory()[nes.getpgrmCtr()];
-                nes.setpgrmCtr(nes.getpgrmCtr() + 1);
-                byte tmp2 = nes.getCPUmemory()[nes.getpgrmCtr()];
-                nes.setpgrmCtr(nes.getpgrmCtr() + 1);
-                int tmp3 = nes.absoluteAddressing(tmp1, tmp2);
-                nes.getCPUmemory()[tmp3] = nes.getAccumulator();
-                break;
+                tmp = 0;
+                switch (temp) {
+                    case "85": //zero page
+                        nes.setAccumulator(nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]]);
+                        nes.setcycleCtr(nes.getcycleCtr() + 3);
+                        break;
+                    case "95": // indexed Addressing Zero Page X
+                        nes.setAccumulator(nes.getCPUmemory()[nes.indexedAddressingZeroPageX(nes.getCPUmemory()[nes.getpgrmCtr()])]);
+                        nes.setcycleCtr(nes.getcycleCtr() + 4);
+                        break;
+                    case "8D": // absolute addressing
+                        nes.setAccumulator(nes.getCPUmemory()[nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])]);
+                        nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                        nes.setcycleCtr(nes.getcycleCtr() + 4);
+                        break;
+                    case "9D": // indexed addressing absolute x
+                        nes.setAccumulator(nes.getCPUmemory()[nes.indexedAddressingAbsoluteX(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])]);
+                        nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                        nes.setcycleCtr(nes.getcycleCtr() + 4);
+                        if(nes.pageBoundryCrossed())
+                        {
+                            nes.setcycleCtr(nes.getcycleCtr() +1);
+                        }
+                        break;
+                    case "99": // indexed addressing absolute y
+                        nes.setAccumulator(nes.getCPUmemory()[nes.indexedAddressingAbsoluteY(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])]);
+                        nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                        nes.setcycleCtr(nes.getcycleCtr() + 4); 
+                        if(nes.pageBoundryCrossed())
+                        {
+                            nes.setcycleCtr(nes.getcycleCtr() +1);
+                        }
+                        break;
+                    case "81": // pre indexed indirect
+                        nes.setAccumulator(nes.getCPUmemory()[nes.preIndexedIndirectAddressing(nes.getCPUmemory()[nes.getpgrmCtr()])]);
+                        nes.setcycleCtr(nes.getcycleCtr() + 6);
+                        break;
+                    case "91": // post indexed indirect
+                        nes.setAccumulator(nes.getCPUmemory()[nes.postIndexedIndirectAddressing(nes.getCPUmemory()[nes.getpgrmCtr()])]);
+                        nes.setcycleCtr(nes.getcycleCtr() + 6); 
+                        break;
+                    default:
+                        System.out.println("STA error");
+                        break;
+                }
             case "A6": case "B6": case "AE": case "BE": case "A2"://ldx 
                 nes.setpgrmCtr(nes.getpgrmCtr() + 1);
                 tmp = 0;
@@ -767,11 +834,80 @@ public class Interpreter
                     nes.zeroFlagClear();
                 }
                 break;
+         
+	/*
+        STX 	86	Zero Page 		2	3								Store the X register to memory.
+	STX 	96	Zero Page, Y            2	4								Store the X register to memory.
+	STX 	8E	Absolute 		3	4								Store the X register to memory.
+                */  
+            case "86": case "96": case "8E"://stx
+                nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                tmp = 0;
+                switch (temp) {
+                    case "86": //zero page
+                        nes.setAccumulator(nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]]);
+                        nes.setcycleCtr(nes.getcycleCtr() + 3);
+                        break;
+                    case "96": // indexed Addressing Zero Page
+                        nes.setAccumulator(nes.getCPUmemory()[nes.indexedAddressingZeroPageY(nes.getCPUmemory()[nes.getpgrmCtr()])]);
+                        nes.setcycleCtr(nes.getcycleCtr() + 4);
+                        break;
+                    case "8E": // absolute addressing
+                        nes.setAccumulator(nes.getCPUmemory()[nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])]);
+                        nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                        nes.setcycleCtr(nes.getcycleCtr() + 4);
+                        break;
+        
+                    default:
+                        System.out.println("STX error");
+                        break;
+                /*
+                TAX 	AA	None			1	2	x					x		Set the X register to the accumulator contents.
+                TAY 	A8	None			1	2	x					x		Set the Y register to the accumulator contents.
+                TSX 	BA	None			1	2	x					x		Set the X register to the stack pointer contents.
+            	TXA 	8A	None			1	2	x					x		Set the accumulator to the X register contents.
+                TXS 	9A	None			1	2								Set the stack pointer to the contents of the X register.
+                TYA 	98	None			1	2	x					x		Set the accumulator to the Y register contents.
+                */
+            
+            case "AA": //TAX
+               //Set the X register to the accumulator contents.
+                nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                nes.setcycleCtr(nes.getcycleCtr() + 2);
+                nes.setIndexRegX(nes.getAccumulator());
+                break;
+            case "A8": //TAY
+                 //Set the Y register to the accumulator contents.
+                nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                nes.setcycleCtr(nes.getcycleCtr() + 2);
+                nes.setIndexRegY(nes.getAccumulator());
+                nes.setAccumulator(tmp);
+                break;
+            case "BA": //TSX
+                //Set the X register to the stack pointer contents.
+                nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                nes.setcycleCtr(nes.getcycleCtr() + 2);
+                nes.setIndexRegX(nes.getStackPointerByte());
+                break;
+            case "8A": //TXA
+                //Set the accumulator to the X register contents.
+                nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                nes.setcycleCtr(nes.getcycleCtr() + 2);
+                nes.setAccumulator(nes.getIndexRegX());
+                break;
+                
             case "9A":  //txs
+                //Set the stack pointer to the contents of the X register.
                 nes.setpgrmCtr(nes.getpgrmCtr() + 1);
                 nes.setcycleCtr(nes.getcycleCtr() + 2);
                 nes.setStackPointer(nes.getIndexRegX());
                 nes.printInfo();
+                break;
+            case "98": //tya
+                //Set the accumulator to the Y register contents.
+                nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                nes.setcycleCtr(nes.getcycleCtr() + 2);
+                nes.setAccumulator(nes.getIndexRegY());
                 break;
             case "20": //jsr
                 int pc = (nes.getpgrmCtr()+2)&0xffff;
@@ -841,6 +977,33 @@ public class Interpreter
                     nes.zeroFlagClear();
                 }
                 break;
+			
+		            /*
+        STY 	84	Zero Page 		2	3								Store the Y register to memory.
+	STY 	94	Zero Page, X            2	4								Store the Y register to memory.
+	STY 	8C	Absolute 		3	4								Store the Y register to memory.
+                */  
+            case "84": case "94": case "8C": //sdy 
+                nes.increasePgrmCtr(1);
+                tmp = 0;
+                switch (temp) {
+                    case "84": //zero page
+                        nes.setAccumulator(nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]]);
+                        nes.increaseCycleCtr(3);
+                        break;
+                    case "94": // indexed Addressing Zero Page
+                        nes.setAccumulator(nes.getCPUmemory()[nes.indexedAddressingZeroPageX(nes.getCPUmemory()[nes.getpgrmCtr()])]);
+                        nes.increaseCycleCtr(4);
+                        break;
+                    case "8C": // absolute addressing
+                        nes.setAccumulator(nes.getCPUmemory()[nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])]);
+                        nes.increasePgrmCtr(1);
+                        nes.increaseCycleCtr(4);
+                        break;                 
+                    default:
+                        System.out.println("SDY error");
+                        break;
+                }
             case "4A": case "46": case "56": case "4E": case "5E"://lsr
                 nes.increasePgrmCtr(1);
                 tmp = 0;
