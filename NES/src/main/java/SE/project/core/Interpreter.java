@@ -185,9 +185,9 @@ public class Interpreter
         
 
         
-        while(true){ //;)
+        while(nes.getcycleCtr() < 1000){ //;)
             String bite = (String.format("%02X", nes.getCPUmemory()[nes.getpgrmCtr()]));
-            //System.out.println(bite + " " + nes.getpgrmCtr() + " " + limit);
+            System.out.println(bite + " " + nes.getpgrmCtr() + " " + nes.getcycleCtr() + nes.zeroFlag());
             processByte(bite, nes);
         }
     }
@@ -257,8 +257,8 @@ public class Interpreter
                 nes.setStackPointer((byte) (nes.getStackPointerByte()-1));
                 high = nes.getCPUmemory()[0xffff];
 		low = nes.getCPUmemory()[0xfffe];
-		high = high << 8;
-		high = high | low;
+		high = (high&0xff) << 8;
+		high = high | (low&0xff);
 		nes.setpgrmCtr(high);
                 nes.breakStatusSet();
                 nes.interruptDisableStatusSet();
@@ -607,6 +607,7 @@ public class Interpreter
                         break;
                     case "D0": //relative on zero flag clear
                         if(!nes.zeroFlag()){
+                            System.out.println("hi");
                             branchCondition = true;
                         }
                         break;
@@ -635,7 +636,11 @@ public class Interpreter
                     } else {
                         incCycles = incCycles + 2;
                     }
+                    
+                } else {
+                    nes.setpgrmCtr(nes.getpgrmCtr() + 1);
                 }
+                
                 nes.setcycleCtr(nes.getcycleCtr() + incCycles);
                 break;
             case "A9": case "A5": case "B5": case "AD": 
@@ -656,7 +661,14 @@ public class Interpreter
                         nes.setcycleCtr(nes.getcycleCtr() + 4);
                         break;
                     case "AD": // absolute addressing
-                        tmp = nes.getCPUmemory()[nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])];
+                        int addr = nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1]);
+                        tmp = nes.getCPUmemory()[addr];
+                        System.out.println("addr: " + addr);
+                        if(addr == 0x2002)
+                        {
+                           //nes.getCPUmemory()[0x2002] = (byte) 0x00; 
+                        }
+                        System.out.println("mem: "+nes.getCPUmemory()[addr]);
                         nes.setpgrmCtr(nes.getpgrmCtr() + 1);
                         nes.setcycleCtr(nes.getcycleCtr() + 4);
                         break;
@@ -696,7 +708,7 @@ public class Interpreter
                 }
                 nes.setpgrmCtr(nes.getpgrmCtr() + 1);
                 nes.setAccumulator(tmp);
-                if(tmp < 0)
+                if((tmp&0x80) == 0x80)
                 {
                     nes.signFlagSet();
                 }
@@ -739,20 +751,22 @@ public class Interpreter
                 switch (temp) {
                     case "85": //zero page
                         nes.setAccumulator(nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]]);
+                        nes.setpgrmCtr(nes.getpgrmCtr() + 1);
                         nes.setcycleCtr(nes.getcycleCtr() + 3);
                         break;
                     case "95": // indexed Addressing Zero Page X
                         nes.setAccumulator(nes.getCPUmemory()[nes.indexedAddressingZeroPageX(nes.getCPUmemory()[nes.getpgrmCtr()])]);
+                        nes.setpgrmCtr(nes.getpgrmCtr() + 1);
                         nes.setcycleCtr(nes.getcycleCtr() + 4);
                         break;
                     case "8D": // absolute addressing
                         nes.setAccumulator(nes.getCPUmemory()[nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])]);
-                        nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                        nes.setpgrmCtr(nes.getpgrmCtr() + 2);
                         nes.setcycleCtr(nes.getcycleCtr() + 4);
                         break;
                     case "9D": // indexed addressing absolute x
                         nes.setAccumulator(nes.getCPUmemory()[nes.indexedAddressingAbsoluteX(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])]);
-                        nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                        nes.setpgrmCtr(nes.getpgrmCtr() + 2);
                         nes.setcycleCtr(nes.getcycleCtr() + 4);
                         if(nes.pageBoundryCrossed())
                         {
@@ -761,7 +775,7 @@ public class Interpreter
                         break;
                     case "99": // indexed addressing absolute y
                         nes.setAccumulator(nes.getCPUmemory()[nes.indexedAddressingAbsoluteY(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])]);
-                        nes.setpgrmCtr(nes.getpgrmCtr() + 1);
+                        nes.setpgrmCtr(nes.getpgrmCtr() + 2);
                         nes.setcycleCtr(nes.getcycleCtr() + 4); 
                         if(nes.pageBoundryCrossed())
                         {
@@ -770,16 +784,19 @@ public class Interpreter
                         break;
                     case "81": // pre indexed indirect
                         nes.setAccumulator(nes.getCPUmemory()[nes.preIndexedIndirectAddressing(nes.getCPUmemory()[nes.getpgrmCtr()])]);
+                        nes.setpgrmCtr(nes.getpgrmCtr() + 1);
                         nes.setcycleCtr(nes.getcycleCtr() + 6);
                         break;
                     case "91": // post indexed indirect
                         nes.setAccumulator(nes.getCPUmemory()[nes.postIndexedIndirectAddressing(nes.getCPUmemory()[nes.getpgrmCtr()])]);
+                        nes.setpgrmCtr(nes.getpgrmCtr() + 1);
                         nes.setcycleCtr(nes.getcycleCtr() + 6); 
                         break;
                     default:
                         System.out.println("STA error");
                         break;
                 }
+                break;
             case "A6": case "B6": case "AE": case "BE": case "A2"://ldx 
                 nes.setpgrmCtr(nes.getpgrmCtr() + 1);
                 tmp = 0;
@@ -1460,6 +1477,7 @@ public class Interpreter
                     case "C9" : // immediate
                         tmp1 = (byte)(nes.getCPUmemory()[nes.getpgrmCtr()]);
                         tmp2 = (byte)(tmp - tmp1);
+                        System.out.println(tmp + " " + tmp1 + " " + tmp2);
                         nes.increasePgrmCtr(1);
                         nes.increaseCycleCtr(2);
                         break;
