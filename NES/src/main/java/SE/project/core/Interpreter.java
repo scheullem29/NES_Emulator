@@ -1830,18 +1830,48 @@ public class Interpreter
                         System.out.println("INC error");
                         break;
                 }
+		if ((tmp & 0x80) == 0x80) {
+			nes.signFlagSet();
+		} else {
+			nes.signFlagClear();
+		}
+		if (tmp == 0) {
+			nes.zeroFlagSet();
+		} else {
+			nes.zeroFlagClear();
+		}
                 break;
             case "E8" : // inx
                 tmp = (byte)(nes.getIndexRegX() + 1);
                 nes.setIndexRegX(tmp);
                 nes.increasePgrmCtr(1);
                 nes.increaseCycleCtr(2);
+		if ((tmp & 0x80) == 0x80) {
+			nes.signFlagSet();
+		} else {
+			nes.signFlagClear();
+		}
+		if (tmp == 0) {
+			nes.zeroFlagSet();
+		} else {
+			nes.zeroFlagClear();
+		}
                 break;
             case "C8" : // iny
                 tmp = (byte)(nes.getIndexRegY() + 1);
                 nes.setIndexRegY(tmp);
                 nes.increasePgrmCtr(1);
                 nes.increaseCycleCtr(2);
+		if ((tmp & 0x80) == 0x80) {
+			nes.signFlagSet();
+		} else {
+			nes.signFlagClear();
+		}
+		if (tmp == 0) {
+			nes.zeroFlagSet();
+		} else {
+			nes.zeroFlagClear();
+		}
                 break;
             case "6C" : case "4C" : // jmp
                 nes.increasePgrmCtr(1);
