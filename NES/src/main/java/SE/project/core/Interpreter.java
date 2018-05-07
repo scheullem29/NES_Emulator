@@ -547,8 +547,8 @@ public class Interpreter
                 if(nes.carryFlag()){
                     carry = 1;
                 }
-                byte ans = (byte)((tmp&0xff) + carry + (nes.getAccumulator()&0xff));
-                nes.setAccumulator(ans);
+                int ans = (byte)((tmp&0xff) + carry + (nes.getAccumulator()&0xff));
+                nes.setAccumulator((byte)(ans&0xff));
                 if((nes.getAccumulator()&0x80) == 0x80)
                 {
                     nes.signFlagSet();
@@ -567,7 +567,7 @@ public class Interpreter
                 } else {
                     nes.overflowFlagClear();
                 }
-                if(tmp == 0)
+                if(nes.getAccumulator == 0)
                 {
                     nes.zeroFlagSet();
                 }
@@ -575,7 +575,7 @@ public class Interpreter
                 {
                     nes.zeroFlagClear();
                 }
-                if((tmp & 0x80) == 0x80)
+                if((ans & 0x100) == 0x100)
                 {
                     nes.carryFlagSet();
                 }
@@ -807,7 +807,7 @@ public class Interpreter
                 nes.setpgrmCtr(nes.getpgrmCtr() + 1);
                 tmp = 0;
                 switch (temp) {
-					case "A2": //immediate
+		    case "A2": //immediate
                         tmp = nes.getCPUmemory()[nes.getpgrmCtr()];
                         nes.setcycleCtr(nes.getcycleCtr() + 2);
                         break;
@@ -958,7 +958,7 @@ public class Interpreter
                 nes.increasePgrmCtr(1);
                 tmp = 0;
                 switch (temp) {
-					case "A0": //immediate
+		    case "A0": //immediate
                         tmp = nes.getCPUmemory()[nes.getpgrmCtr()];
                         nes.increaseCycleCtr(2);
                         break;
@@ -1304,6 +1304,48 @@ public class Interpreter
             }
             
             ans = (byte) ((tmp&0xff) - borrow - (nes.getAccumulator()&0xff));
+	    sub = (((~tmp)&0xff)+1); //convert from 2's complements but only the byte we care about
+            sub = (tmp + nes.getAccumulator);
+	    if(borrow == 1)
+	    {
+		    borrow = 0xff;
+		    sub = sub + 0xff;
+	    }
+            nes.setAccumulatro((byte)(sub & 0xff));
+	    if((nes.getAccumulator()&0x80) == 0x80)
+            {
+		nes.signFlagSet();
+            }
+            else
+            {
+                    nes.signFlagClear();
+            }
+            if((nes.getAccumulator()&0x80) == (tmp&0x80)){
+                byte Overflow = (byte)((ans&0x80) ^ carry);
+                if(Overflow == 1){
+                    nes.overflowFlagSet();
+                } else {
+                    nes.overflowFlagClear();
+                }
+            } else {
+                nes.overflowFlagClear();
+            }
+            if(nes.getAccumulator == 0)
+            {
+                nes.zeroFlagSet();
+            }
+            else
+            {
+                nes.zeroFlagClear();
+            }
+            if((sub & 0x100) == 0x100)
+            {
+                nes.carryFlagSet();
+            }
+            else
+            {
+                nes.carryFlagClear();
+            }
             break;                
         /*
         ROR 	6A	Accumulator             1	2	x					x	x	Rotate contents of the accumulator right through carry.
