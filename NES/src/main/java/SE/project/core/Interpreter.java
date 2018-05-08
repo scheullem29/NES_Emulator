@@ -567,7 +567,7 @@ public class Interpreter
                 } else {
                     nes.overflowFlagClear();
                 }
-                if(nes.getAccumulator == 0)
+                if(nes.getAccumulator() == 0)
                 {
                     nes.zeroFlagSet();
                 }
@@ -1242,6 +1242,11 @@ public class Interpreter
                 
             nes.setpgrmCtr(nes.getpgrmCtr() + 1); // set counter
             tmp = 0;
+            carry = 0;
+            if(nes.carryFlag())
+            {
+                carry = 1;
+            }
             switch(temp)
             {
                 case "E9": //immediate
@@ -1304,14 +1309,14 @@ public class Interpreter
             }
             
             ans = (byte) ((tmp&0xff) - borrow - (nes.getAccumulator()&0xff));
-	    sub = (((~tmp)&0xff)+1); //convert from 2's complements but only the byte we care about
-            sub = (tmp + nes.getAccumulator);
+	    int sub = (((~tmp)&0xff)+1); //convert from 2's complements but only the byte we care about
+            sub = (tmp + nes.getAccumulator());
 	    if(borrow == 1)
 	    {
-		    borrow = 0xff;
+		    borrow = (byte)0xff;
 		    sub = sub + 0xff;
 	    }
-            nes.setAccumulatro((byte)(sub & 0xff));
+            nes.setAccumulator((byte)(sub & 0xff));
 	    if((nes.getAccumulator()&0x80) == 0x80)
             {
 		nes.signFlagSet();
@@ -1330,7 +1335,7 @@ public class Interpreter
             } else {
                 nes.overflowFlagClear();
             }
-            if(nes.getAccumulator == 0)
+            if(nes.getAccumulator() == 0)
             {
                 nes.zeroFlagSet();
             }
@@ -1530,7 +1535,7 @@ public class Interpreter
                 tmp = nes.getAccumulator();
                 byte tmp1 = 0;
                 byte tmp2 = 0;
-                int sub = 0;
+                sub = 0;
                 switch (temp)
                 {
                     case "C9" : // immediate
@@ -1843,6 +1848,7 @@ public class Interpreter
                 break;
             case "E6" : case "F6" : case "EE" : case "FE" : // inc
                 nes.increasePgrmCtr(1);
+                tmp = 0;
                 switch (temp) {
                     case "E6" : // zero page
                         tmp = (byte)(nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]] + 1);
