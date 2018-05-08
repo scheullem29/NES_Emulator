@@ -24,6 +24,8 @@ public class CPU
 		this.PPUmemory = new byte[0x4000];
 		this.OAMmemory = new byte[0x100];
                 Inter = new Interpreter();
+                this.CPUmemory[0x2002] = (byte) 0x80;
+                //this.CPUmemory[0x07ff] = (byte) 0xA5;
 		
 	}
         
@@ -107,7 +109,7 @@ public class CPU
 
         public short getStackPointer()
         {
-            return (short)(0x0100 & (this.stackPtr & 0xff));
+            return (short)(0x0100 | (this.stackPtr & 0xff));
         }
 
         public byte[] getCPUmemory(){
@@ -367,13 +369,15 @@ public class CPU
 		{
 			adjust = (((~value)&0xff)+1) * -1; //convert from 2's complements but only the byte we care about
 		}
-		return (pgrmCtr + 2 + adjust);
+		return (pgrmCtr + 1 + adjust);
 	}
         
         protected int absoluteAddressing(byte low, byte high)
         {
-            int tmp = (int) high << 8;
-            return( (tmp|low)& 0xffff);
+            int tmp = high & 0xff;
+            tmp = tmp << 8;
+            int tmp2 = low & 0xff;
+            return( (tmp|tmp2)& 0xffff);
         }
         
         public void printInfo(){
