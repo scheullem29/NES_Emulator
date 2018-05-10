@@ -11,6 +11,7 @@ public class CPU
 	private byte[] OAMmemory;
         private Interpreter Inter;
         private boolean pageBoundryCrossed = false;
+        private boolean interruptState = false;
 	
 	public CPU()
 	{
@@ -28,6 +29,16 @@ public class CPU
                 //this.CPUmemory[0x07ff] = (byte) 0xA5;
 		
 	}
+        
+        public void setInterruptState(boolean in)
+        {
+            this.interruptState = in;
+        }
+        
+        public boolean getInterruptState()
+        {
+            return this.interruptState;
+        }
         
         public void increasePgrmCtr(int amt)
         {
