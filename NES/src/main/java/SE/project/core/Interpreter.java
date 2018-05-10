@@ -183,14 +183,48 @@ public class Interpreter
 
     void readInstructions(CPU nes) {
         int sanity = 0;
-        while(nes.getcycleCtr() < 1000000){ //;)
-            String bite = (String.format("%02X", nes.getCPUmemory()[nes.getpgrmCtr()]));
-            if(sanity%100 == 0){
-                //nes.printInfo();
+        int ctr = 0;
+        while(nes.getcycleCtr() < 60000){
+            if(nes.getpgrmCtr() == 32855)
+            {
+                ctr++;
             }
-            sanity += 5;
-            System.out.println(bite + " " + nes.getpgrmCtr() + " " + nes.getcycleCtr() + " " + nes.getStackPointer());
-            processByte(bite, nes);
+            if(ctr == 3)
+            {
+                nes.setInterruptState(true);
+                ctr = 0;
+            }
+            if(nes.getInterruptState() & !nes.breakStatus())
+            {
+                int pc = nes.getpgrmCtr()&0xffff;
+                byte high = (byte) ((pc & 0xff00)>>8);
+                byte low = (byte) (pc & 0x00ff);
+                nes.getCPUmemory()[nes.getStackPointer()] = (byte) high;
+                nes.setStackPointer((byte) (nes.getStackPointerByte()-1));
+                nes.getCPUmemory()[nes.getStackPointer()] = (byte) low;
+                nes.setStackPointer((byte) (nes.getStackPointerByte()-1));
+                nes.getCPUmemory()[nes.getStackPointer()] = (byte) nes.getStatusReg();
+                nes.setStackPointer((byte) (nes.getStackPointerByte()-1));
+                int high1 = nes.getCPUmemory()[0xfffb];
+		int low1 = nes.getCPUmemory()[0xfffa];
+		high1 = (high1&0xff) << 8;
+		high1 = high1 | (low1&0xff);
+		nes.setpgrmCtr(high1);
+                nes.interruptDisableStatusSet();
+                nes.setcycleCtr(nes.getcycleCtr() + 7);
+                nes.setInterruptState(false);
+            }
+            else
+            {
+                String bite = (String.format("%02X", nes.getCPUmemory()[nes.getpgrmCtr()]));
+                if(sanity%100 == 0){
+                    //nes.printInfo();
+                }
+                sanity += 5;
+                System.out.println(bite + " " + nes.getpgrmCtr() + " " + nes.getcycleCtr() + " " + nes.getStackPointer());
+                processByte(bite, nes);
+            }
+            
         }
     }
 
@@ -234,24 +268,26 @@ public class Interpreter
                 high1 = high1 << 8;
                 high1 = high1 | low1;
                 nes.setpgrmCtr(high1);
+                nes.setInterruptState(false);
                 break;
             case "60":
                 nes.setpgrmCtr(nes.getpgrmCtr() +1);
                 nes.setcycleCtr(nes.getcycleCtr() + 6);
-                System.out.println(nes.getCPUmemory()[nes.getStackPointer()]);
-                System.out.println(nes.getCPUmemory()[nes.getStackPointer()+1]);
-                System.out.println(nes.getCPUmemory()[nes.getStackPointer()+2]);
+               // System.out.println(nes.getCPUmemory()[nes.getStackPointer()]);
+               // System.out.println(nes.getCPUmemory()[nes.getStackPointer()+1]);
+               // System.out.println(nes.getCPUmemory()[nes.getStackPointer()+2]);
                 nes.setStackPointer((byte)(nes.getStackPointerByte() + 1));
                 low1 = nes.getCPUmemory()[nes.getStackPointer()]&0xff;
                 nes.setStackPointer((byte)(nes.getStackPointerByte() + 1));
                 high1 = nes.getCPUmemory()[nes.getStackPointer()]&0xff;
                 high1 = high1 << 8;
                 high1 = high1 | low1;
-                System.out.println(low1 + " " + high1);
+               // System.out.println(low1 + " " + high1);
                 nes.setpgrmCtr(high1);
                 break;
 	    case "00":
                 nes.setpgrmCtr(nes.getpgrmCtr() + 2);
+                nes.setInterruptState(true);
                 int pc = nes.getpgrmCtr()&0xffff;
                 byte high = (byte) ((pc & 0xff00)>>8);
                 byte low = (byte) (pc & 0x00ff);
@@ -654,7 +690,7 @@ public class Interpreter
                 tmp = 0;
                 switch (temp) {
                     case "A9": //immediate
-                        nes.printInfo();
+                        //nes.printInfo();
                         tmp = nes.getCPUmemory()[nes.getpgrmCtr()];
                         nes.setcycleCtr(nes.getcycleCtr() + 2);
                         break;
@@ -669,12 +705,12 @@ public class Interpreter
                     case "AD": // absolute addressing
                         int addr = nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1]);
                         tmp = nes.getCPUmemory()[addr];
-                        System.out.println("addr: " + addr);
+                        //System.out.println("addr: " + addr);
                         if(addr == 0x2002)
                         {
                            //nes.getCPUmemory()[0x2002] = (byte) 0x00; 
                         }
-                        System.out.println("mem: "+nes.getCPUmemory()[addr]);
+                        //System.out.println("mem: "+nes.getCPUmemory()[addr]);
                         nes.setpgrmCtr(nes.getpgrmCtr() + 1);
                         nes.setcycleCtr(nes.getcycleCtr() + 4);
                         break;
@@ -927,7 +963,7 @@ public class Interpreter
                 nes.setpgrmCtr(nes.getpgrmCtr() + 1);
                 nes.setcycleCtr(nes.getcycleCtr() + 2);
                 nes.setStackPointer(nes.getIndexRegX());
-                nes.printInfo();
+                //nes.printInfo();
                 break;
             case "98": //tya
                 //Set the accumulator to the Y register contents.
@@ -943,16 +979,16 @@ public class Interpreter
                 nes.setStackPointer( (byte) ((nes.getStackPointerByte() - 1) & 0xff) );
                 nes.getCPUmemory()[nes.getStackPointer()] = low;
                 nes.setStackPointer( (byte) ((nes.getStackPointerByte() - 1) & 0xff) ); //push the program counter to stack
-                System.out.println(low + " " + high + " " + nes.getStackPointer());
+               // System.out.println(low + " " + high + " " + nes.getStackPointer());
                 nes.setpgrmCtr(nes.getpgrmCtr()+1);                                       
                 low = nes.getCPUmemory()[nes.getpgrmCtr()];
                 nes.setpgrmCtr(nes.getpgrmCtr()+1);
                 high = nes.getCPUmemory()[nes.getpgrmCtr()];
                 nes.setpgrmCtr(nes.absoluteAddressing(low, (byte)high));      // grab the new program counter from the jsr
                 nes.setcycleCtr(nes.getcycleCtr()+6);
-                System.out.println(nes.getCPUmemory()[nes.getStackPointer()]);
-                System.out.println(nes.getCPUmemory()[nes.getStackPointer()+1]);
-                System.out.println(nes.getCPUmemory()[nes.getStackPointer()+2]);
+               // System.out.println(nes.getCPUmemory()[nes.getStackPointer()]);
+               // System.out.println(nes.getCPUmemory()[nes.getStackPointer()+1]);
+               // System.out.println(nes.getCPUmemory()[nes.getStackPointer()+2]);
                 break;
             case "A0": case "A4": case "B4": case "AC": case "BC"://ldy 
                 nes.increasePgrmCtr(1);
@@ -1219,6 +1255,7 @@ public class Interpreter
                 {
                     nes.zeroFlagClear();
                 }
+                break;
             case "28": //plp
                 nes.setStackPointer((byte)(nes.getStackPointerByte()+1));
                 nes.setStatusReg(nes.getCPUmemory()[nes.getStackPointer()]);
@@ -1542,7 +1579,7 @@ public class Interpreter
                         tmp1 = (byte)(nes.getCPUmemory()[nes.getpgrmCtr()]);
 			sub = (((~tmp1)&0xff)+1); //convert from 2's complements but only the byte we care about
                         sub = (tmp + sub);
-                        System.out.println(tmp + " " + tmp1 + " " + tmp2);
+                       // System.out.println(tmp + " " + tmp1 + " " + tmp2);
                         nes.increasePgrmCtr(1);
                         nes.increaseCycleCtr(2);
                         break;
@@ -1662,7 +1699,7 @@ public class Interpreter
                 } else {
                     nes.carryFlagClear();
                 }
-                nes.printInfo();
+                //nes.printInfo();
                 break;
             case "C0" : case "C4" : case "CC" : // cpy
                 tmp = nes.getIndexRegY();
@@ -1711,7 +1748,7 @@ public class Interpreter
                 } else {
                     nes.carryFlagClear();
                 }
-                nes.printInfo();
+                //nes.printInfo();
                 break;
             case "C6" : case "D6" : case "CE" : case "DE" : // dec
                 nes.increasePgrmCtr(1);
@@ -1932,6 +1969,8 @@ public class Interpreter
                         low = nes.getCPUmemory()[nes.getpgrmCtr()];
                         nes.setpgrmCtr(nes.getpgrmCtr()+1);
                         high = nes.getCPUmemory()[nes.getpgrmCtr()];
+                        //System.out.println("l: " + low + " h: " + high);
+                        //System.out.println(nes.absoluteAddressing(low, (byte)high));
                         nes.setpgrmCtr(nes.absoluteAddressing(low, (byte)high));
                         nes.setcycleCtr(nes.getcycleCtr()+3);
                         break;
@@ -1942,7 +1981,7 @@ public class Interpreter
                 break;
             default:
                 nes.setpgrmCtr(nes.getpgrmCtr() + 1);
-                System.out.println(temp);
+                System.out.println("ERROR default: " + temp);
         }
             
     }
