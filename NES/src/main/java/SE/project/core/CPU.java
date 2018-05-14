@@ -1,5 +1,5 @@
 package SE.project.core;
-hello
+
 
 public class CPU 
 {
@@ -12,6 +12,24 @@ public class CPU
         private Interpreter Inter;
         private boolean pageBoundryCrossed = false;
         private boolean interruptState = false;
+        int sanity = 0;
+
+    public int getSanity() {
+        return sanity;
+    }
+
+    public void setSanity(int sanity) {
+        this.sanity = sanity;
+    }
+
+    public int getCtr() {
+        return ctr;
+    }
+
+    public void setCtr(int ctr) {
+        this.ctr = ctr;
+    }
+        int ctr = 0;
 	
 	public CPU()
 	{
