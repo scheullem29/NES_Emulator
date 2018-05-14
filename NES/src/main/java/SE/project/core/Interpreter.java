@@ -1,5 +1,8 @@
 package SE.project.core;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class Interpreter 
 {
 
@@ -178,21 +181,23 @@ public class Interpreter
 	6	Bit 6 of tested byte											
 	*	Add 1 clock cycle is a page boundry is crossed.											
 	**	Add 1 clock cycle if branch occurs to location in same page. Add 2 clock cycles if branch to another page occurs.											
-
 	**/
 
     void readInstructions(CPU nes) {
-        int sanity = 0;
-        int ctr = 0;
-        while(nes.getcycleCtr() < 60000){
+        /*try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Interpreter.class.getName()).log(Level.SEVERE, null, ex);
+        }*/
+        
             if(nes.getpgrmCtr() == 32855)
             {
-                ctr++;
+                nes.setCtr(nes.getCtr() + 1);
             }
-            if(ctr == 3)
+            if(nes.getCtr() == 3)
             {
                 nes.setInterruptState(true);
-                ctr = 0;
+                nes.setCtr(0);
             }
             if(nes.getInterruptState() & !nes.breakStatus())
             {
@@ -217,15 +222,15 @@ public class Interpreter
             else
             {
                 String bite = (String.format("%02X", nes.getCPUmemory()[nes.getpgrmCtr()]));
-                if(sanity%100 == 0){
+                if(nes.getSanity()%100 == 0){
                     //nes.printInfo();
                 }
-                sanity += 5;
+                nes.setSanity(nes.getSanity() + 5);
                 System.out.println(bite + " " + nes.getpgrmCtr() + " " + nes.getcycleCtr() + " " + nes.getStackPointer());
                 processByte(bite, nes);
             }
             
-        }
+        
     }
 
     private void processByte(String temp, CPU nes) {
