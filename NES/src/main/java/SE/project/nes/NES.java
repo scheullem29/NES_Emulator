@@ -26,6 +26,10 @@ import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import SE.project.core.*;
+import javafx.concurrent.Service;
+import javafx.concurrent.Task;
+import javafx.scene.layout.VBox;
+import javafx.scene.control.Button;
 
 
 
@@ -36,10 +40,106 @@ public class NES extends Application {
     private ArrayList<String> defaultKeys = new ArrayList<String>(Arrays.asList("W","A","S","D","V","B","K","L"));
     private CPU nes = new CPU();
     private NESreader NR;
+    private int stopCycle = 57291;
+    private int time = 1000;
+    private boolean reset = false;
+    private boolean stepMode = false;
     
     
     @Override
     public void start(Stage stage) throws Exception {
+        DataHelper dataHelper = new DataHelper("Counter: ","Cycle: ", "Memory: ", "Carry: ", "Zero: ", "Interrupt: ", "Decimal: ", "Break: ", "Overflow: ", "Sign: ", "Accumulator: ", "IndexRegX: ", "IndexRegY: ");
+        Label ctr = new Label("");
+        ctr.setFont(new Font(30));
+        Label cycle = new Label("");
+        cycle.setFont(new Font(30));
+        Label memory = new Label("");
+        memory.setFont(new Font(30));
+        Label accumulator = new Label("");
+        accumulator.setFont(new Font(30));
+        Label regX = new Label("");
+        regX.setFont(new Font(30));
+        Label regY = new Label("");
+        regY.setFont(new Font(30));
+        Label carry = new Label("");
+        carry.setFont(new Font(30));
+        Label zero = new Label("");
+        zero.setFont(new Font(30));
+        Label interrupt = new Label("");
+        interrupt.setFont(new Font(30));
+        Label decimal = new Label("");
+        decimal.setFont(new Font(30));
+        Label brk = new Label("");
+        brk.setFont(new Font(30));
+        Label overflow = new Label("");
+        overflow.setFont(new Font(30));
+        Label sign = new Label("");
+        sign.setFont(new Font(30));
+        Service<DataHelper> service = new Service<DataHelper>() {
+            @Override
+            protected Task<DataHelper> createTask() {
+                return new Task<DataHelper>() {
+                    @Override
+                    protected DataHelper call() throws Exception {   
+                        Thread.sleep(time);
+                        nes.printMemory();
+                        return new DataHelper("Counter: " + nes.getpgrmCtr(), "Cycle: " + nes.getcycleCtr(), "Memory: " + String.format("%02X", (nes.getCPUmemory()[nes.getpgrmCtr()]&0xff)) + " - " + Integer.toBinaryString((nes.getCPUmemory()[nes.getpgrmCtr()]&0xff)), 
+                                "Carry: " + nes.carryFlag(), "Zero: " + nes.zeroFlag(), "Interrupt: " + nes.getInterruptState(),"Decimal: " + nes.decimalModeFlag(), "Break: " + nes.breakStatus(), "Overflow: " + nes.overflowFlag(), 
+                                "Sign: " + nes.signFlag(), "Accumulator: " + String.format("%02X",nes.getAccumulator()), "IndexRegX: " + String.format("%02X", nes.getIndexRegX()), "IndexRegY: " + String.format("%02X", nes.getIndexRegY()));
+                    }   
+                };
+            }
+        };
+        ctr.textProperty().bind(dataHelper.ctrProperty());
+        cycle.textProperty().bind(dataHelper.cycleProperty());
+        memory.textProperty().bind(dataHelper.memoryProperty());
+        carry.textProperty().bind(dataHelper.carryProperty());
+        zero.textProperty().bind(dataHelper.zeroProperty());
+        interrupt.textProperty().bind(dataHelper.interruptProperty());
+        decimal.textProperty().bind(dataHelper.decimalProperty());
+        brk.textProperty().bind(dataHelper.brkProperty());
+        overflow.textProperty().bind(dataHelper.overflowProperty());
+        sign.textProperty().bind(dataHelper.signProperty());
+        accumulator.textProperty().bind(dataHelper.accumulatorProperty());
+        regX.textProperty().bind(dataHelper.regXProperty());
+        regY.textProperty().bind(dataHelper.regYProperty());
+        service.setOnSucceeded(e -> {
+            dataHelper.setCtr(service.getValue().getCtr());
+            dataHelper.setCycle(service.getValue().getcycle());
+            dataHelper.setmemory(service.getValue().getmemory());
+            dataHelper.setcarry(service.getValue().getcarry());
+            dataHelper.setzero(service.getValue().getzero());
+            dataHelper.setinterrupt(service.getValue().getinterrupt());
+            dataHelper.setdecimal(service.getValue().getdecimal());
+            dataHelper.setbrk(service.getValue().getbrk());
+            dataHelper.setoverflow(service.getValue().getoverflow());
+            dataHelper.setsign(service.getValue().getsign());
+            dataHelper.setaccumulator(service.getValue().getaccumulator());
+            dataHelper.setregX(service.getValue().getregX());
+            dataHelper.setregY(service.getValue().getregY());
+            if(nes.getcycleCtr()< 100000){
+                if(nes.getcycleCtr() == stopCycle){
+                    stepMode = !stepMode;
+                }
+                if(reset){
+                    nes = new CPU();
+                    stepMode = false;
+                    time = 1000;
+                    fc.setTitle("Select Rom File");
+                    //f = fc.showOpenDialog(stage);
+                    //NR = new NESreader(f.getAbsolutePath());
+                    NR = new NESreader("src\\main\\resources\\ROMS\\Super Mario Bros (E).nes");
+                    NR.readFile(nes);
+                    service.restart();
+                    reset = false;
+                } else {
+                    if(!stepMode){
+                        service.restart();
+                    }
+                }
+            }
+            
+        });
         
         MenuButton load = new MenuButton("File");
             //Loading function
@@ -50,8 +150,9 @@ public class NES extends Application {
                 //NR = new NESreader(f.getAbsolutePath());
                 NR = new NESreader("src\\main\\resources\\ROMS\\Super Mario Bros (E).nes");
                 NR.readFile(nes);
-                nes.printMemory();
-        });
+                service.start();
+                
+            });
             //Exit function
             MenuItem load2 = new MenuItem("Exit");
             load2.setOnAction(e -> Platform.exit());
@@ -135,11 +236,69 @@ public class NES extends Application {
                 KBStage.show();
         });
             settings.getItems().addAll(settings1);
-            
+        
+        Button resetButton = new Button("reset");
+        resetButton.setOnAction((ActionEvent event) -> {
+            reset = true;
+            if(stepMode){
+                service.restart();
+            }
+        });
+        Button Timer = new Button("Timer");
+        Timer.setOnAction((ActionEvent event) -> {
+            if(time == 0){
+                time = 1000;
+            } else {
+                time = 0;
+            }
+        });
+        HBox hbox = new HBox();
+        hbox.getChildren().add(resetButton);
+        hbox.getChildren().add(Timer);
+        Button stepModeButton = new Button("Step Mode");
+        stepModeButton.setOnAction((ActionEvent event) -> {
+            if(stepMode){
+                stepMode = !stepMode;
+                service.restart();
+            } else {
+                stepMode = !stepMode;
+            }  
+        });
+        Button steppingButton = new Button ("Step");
+        steppingButton.setOnAction((ActionEvent event) -> {
+            service.restart();
+        });
+        HBox hbox1 = new HBox();
+        hbox1.getChildren().add(stepModeButton);
+        hbox1.getChildren().add(steppingButton);
+        
         ToolBar tb = new ToolBar(load, settings);
         BorderPane pane = new BorderPane();
         pane.setTop(tb);
-        Scene scene = new Scene(pane,1000,800);
+        VBox vbox = new VBox();
+        vbox.setPadding(new Insets(10));
+        vbox.setSpacing(8);
+        vbox.getChildren().add(ctr);
+        vbox.getChildren().add(cycle);
+        vbox.getChildren().add(memory);
+        vbox.getChildren().add(accumulator);
+        vbox.getChildren().add(regX);
+        vbox.getChildren().add(regY);
+        vbox.getChildren().add(hbox);
+        vbox.getChildren().add(hbox1);
+        VBox vbox2 = new VBox();
+        vbox2.setPadding(new Insets(10));
+        vbox2.setSpacing(8);
+        vbox2.getChildren().add(carry);
+        vbox2.getChildren().add(zero);
+        vbox2.getChildren().add(interrupt);
+        vbox2.getChildren().add(decimal);
+        vbox2.getChildren().add(brk);
+        vbox2.getChildren().add(overflow);
+        vbox2.getChildren().add(sign);
+        pane.setLeft(vbox);
+        pane.setRight(vbox2);
+        Scene scene = new Scene(pane,600,450);
         stage.setTitle("NES Emulator");
         stage.setScene(scene);
         stage.show();
