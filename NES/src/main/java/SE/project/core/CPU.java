@@ -259,12 +259,12 @@ public class CPU
 	
         public void carryFlagSet()
 	{
-            statusReg = (byte)(statusReg&0xfe);
+            statusReg = (byte)(statusReg|0x01);
 	}
         
         public void carryFlagClear()
 	{
-            statusReg = (byte)(statusReg|0x01);
+            statusReg = (byte)(statusReg&0xfe);
 	}
         
 	/**
