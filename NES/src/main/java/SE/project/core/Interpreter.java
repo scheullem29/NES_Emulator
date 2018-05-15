@@ -1421,7 +1421,7 @@ public class Interpreter
                 {
                     toCarry = true;
                 }
-                tmp = (byte)(tmp >> 1);
+                tmp = (byte)((tmp&0xff) >> 1);
                 if(nes.carryFlag())
                 {
                     tmp = (byte)(tmp | 0x80);
