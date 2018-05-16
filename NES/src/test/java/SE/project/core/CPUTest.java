@@ -119,6 +119,7 @@ public class CPUTest {
         expResult = 0xff00;
         result = instance.postIndexedIndirectAddressing(value);
         assertEquals(expResult, result);
+        assertEquals(false, instance.pageBoundryCrossed());
         
         value = 0;
         instance.setIndexRegY((byte)0x01);
@@ -127,6 +128,15 @@ public class CPUTest {
         expResult = 0x0000;
         result = instance.postIndexedIndirectAddressing(value);
         assertEquals(expResult, result);
+        
+        value = 0;
+        instance.setIndexRegY((byte)0x01);
+        instance.getCPUmemory()[0]=(byte)0xff;
+        instance.getCPUmemory()[1]=(byte)0x00;
+        boolean boolResult = true;
+        instance.postIndexedIndirectAddressing(value);
+        assertEquals(boolResult, instance.pageBoundryCrossed());
+        
     }
 
     /**
@@ -224,6 +234,7 @@ public class CPUTest {
         instance.setIndexRegX((byte)0x40);
         expResult = 0x4080;
         result = instance.indexedAddressingAbsoluteX(low, high);
+        assertEquals(false, instance.pageBoundryCrossed());
         assertEquals(expResult, result);
  
         low = (byte)0x80;
@@ -246,6 +257,12 @@ public class CPUTest {
         expResult = 0x0000;
         result = instance.indexedAddressingAbsoluteX(low, high);
         assertEquals(expResult, result);
+        
+        low = (byte)0xff;
+        high = 0x00;
+        instance.setIndexRegX((byte)0x01);
+        instance.indexedAddressingAbsoluteX(low, high);
+        assertEquals(true, instance.pageBoundryCrossed());
     }
 
     /**
@@ -267,6 +284,7 @@ public class CPUTest {
         instance.setIndexRegY((byte)0x40);
         expResult = 0x4080;
         result = instance.indexedAddressingAbsoluteY(low, high);
+        assertEquals(false, instance.pageBoundryCrossed());
         assertEquals(expResult, result);
  
         low = (byte)0x80;
@@ -290,7 +308,11 @@ public class CPUTest {
         result = instance.indexedAddressingAbsoluteY(low, high);
         assertEquals(expResult, result);
         
-        
+        low = (byte) 0xff;
+        high = 0x00;
+        instance.setIndexRegY((byte)0x01);
+        instance.indexedAddressingAbsoluteY(low, high);
+        assertEquals(true, instance.pageBoundryCrossed());
     }
 
     /**
@@ -333,19 +355,19 @@ public class CPUTest {
         System.out.println("relativeAddressing");
         CPU instance = new CPU();
         byte value = 0x44;
-        int expResult = 0x46;
+        int expResult = 0x45;
         instance.setpgrmCtr(0);
         int result = instance.relativeAddressing(value);
         assertEquals(expResult, result);
         
         value = (byte)0xf8;
-        expResult = 0x1a;
+        expResult = 0x19;
         instance.setpgrmCtr(0x20);
         result = instance.relativeAddressing(value);
         assertEquals(expResult, result);
         
         value = (byte)0x00;
-        expResult = 0x2;
+        expResult = 0x1;
         instance.setpgrmCtr(0x00);
         result = instance.relativeAddressing(value);
         assertEquals(expResult, result);
