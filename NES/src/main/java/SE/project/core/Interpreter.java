@@ -228,7 +228,7 @@ public class Interpreter
         }
     }
 
-    private void processByte(String temp, CPU nes) {
+    protected void processByte(String temp, CPU nes) {
         switch (temp) {
             case "78": //sei
                 nes.setpgrmCtr(nes.getpgrmCtr() + 1);
@@ -1103,7 +1103,7 @@ public class Interpreter
                     nes.carryFlagClear();
                 }
                 nes.signFlagClear();
-                tmp = (byte)(tmp >> 1);
+                tmp = (byte)((tmp&0xff) >> 1);
                 if(tmp == 0)
                 {
                     nes.zeroFlagSet();
