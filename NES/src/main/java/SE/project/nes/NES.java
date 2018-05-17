@@ -40,7 +40,7 @@ public class NES extends Application {
     private ArrayList<String> defaultKeys = new ArrayList<String>(Arrays.asList("W","A","S","D","V","B","K","L"));
     private CPU nes = new CPU();
     private NESreader NR;
-    private int stopCycle = 57291;
+    private int stopCycle = 58110;
     private int time = 1000;
     private boolean reset = false;
     private boolean stepMode = false;
