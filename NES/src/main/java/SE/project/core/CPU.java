@@ -13,23 +13,10 @@ public class CPU
         private boolean pageBoundryCrossed = false;
         private boolean interruptState = false;
         int sanity = 0;
-
-    public int getSanity() {
-        return sanity;
-    }
-
-    public void setSanity(int sanity) {
-        this.sanity = sanity;
-    }
-
-    public int getCtr() {
-        return ctr;
-    }
-
-    public void setCtr(int ctr) {
-        this.ctr = ctr;
-    }
         int ctr = 0;
+
+    
+        
 	
 	public CPU()
 	{
@@ -47,6 +34,22 @@ public class CPU
                 //this.CPUmemory[0x07ff] = (byte) 0xA5;
 		
 	}
+        
+        public int getSanity() {
+            return sanity;
+        }
+
+        public void setSanity(int sanity) {
+            this.sanity = sanity;
+        }
+
+        public int getCtr() {
+            return ctr;
+        }
+
+        public void setCtr(int ctr) {
+            this.ctr = ctr;
+        }
         
         public void setInterruptState(boolean in)
         {
@@ -277,12 +280,12 @@ public class CPU
 	
         public void carryFlagSet()
 	{
-            statusReg = (byte)(statusReg&0xfe);
+            statusReg = (byte)(statusReg|0x01);
 	}
         
         public void carryFlagClear()
 	{
-            statusReg = (byte)(statusReg|0x01);
+            statusReg = (byte)(statusReg&0xfe);
 	}
         
 	/**
