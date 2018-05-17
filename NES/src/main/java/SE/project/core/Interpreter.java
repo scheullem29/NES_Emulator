@@ -501,8 +501,7 @@ public class Interpreter
                 }
                 switch(temp) {
                     case "0A":  //accumulator
-                        nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]] = tmp;
-                        nes.increasePgrmCtr(1);
+                        nes.setAccumulator(tmp);
                         nes.increaseCycleCtr(2);
                         break;
                     case "06":  //zero page
@@ -700,7 +699,7 @@ public class Interpreter
                         nes.setcycleCtr(nes.getcycleCtr() + 2);
                         break;
                     case "A5": //zero page
-                        tmp = nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]];
+                        tmp = nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]&0xff];
                         nes.setcycleCtr(nes.getcycleCtr() + 3);
                         break;
                     case "B5": // indexed Addressing Zero Page
@@ -1423,14 +1422,14 @@ public class Interpreter
                         break;
                 }
                 boolean toCarry = false;
-                if((tmp & 0x80) == 0x80)
+                if((tmp & 0x01) == 0x01)
                 {
                     toCarry = true;
                 }
-                tmp = (byte)(tmp << 1);
+                tmp = (byte)(tmp >> 1);
                 if(nes.carryFlag())
                 {
-                    tmp = (byte)(tmp + 1);
+                    tmp = (byte)(tmp | 0x80);
                 }
                 if(toCarry)
                 {
@@ -1574,66 +1573,65 @@ public class Interpreter
             case "C9" : case "C5" : case "D5" : case "CD" :
             case "DD" : case "D9" : case "C1" : case "D1" : //cmp
                 nes.increasePgrmCtr(1);
-                tmp = nes.getAccumulator();
-                byte tmp1 = 0;
-                byte tmp2 = 0;
+                int tmpp = nes.getAccumulator();
+                int tmpp1 = 0;
                 sub = 0;
                 switch (temp)
                 {
                     case "C9" : // immediate
-                        tmp1 = (byte)(nes.getCPUmemory()[nes.getpgrmCtr()]);
-			sub = (((~tmp1)&0xff)+1); //convert from 2's complements but only the byte we care about
-                        sub = (tmp + sub);
+                        tmpp1 = (nes.getCPUmemory()[nes.getpgrmCtr()])&0xff;
+			sub = (((~tmpp1)&0xff)+1); //convert from 2's complements but only the byte we care about
+                        sub = (tmpp + sub);
                        // System.out.println(tmp + " " + tmp1 + " " + tmp2);
                         nes.increasePgrmCtr(1);
                         nes.increaseCycleCtr(2);
                         break;
                     case "C5" : // zero page
-                        tmp1 = (byte)(nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]]);
-                        sub = (((~tmp1)&0xff)+1); //convert from 2's complements but only the byte we care about
-                        sub = (tmp + sub);
+                        tmpp1 = (nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]])&0xff;
+                        sub = (((~tmpp1)&0xff)+1); //convert from 2's complements but only the byte we care about
+                        sub = (tmpp + sub);
                         nes.increasePgrmCtr(1);
                         nes.increaseCycleCtr(3);
                         break;
                     case "D5" : // zero page, x
-                        tmp1 = (byte)(nes.getCPUmemory()[nes.indexedAddressingZeroPageX(nes.getCPUmemory()[nes.getpgrmCtr()])]);
-                        sub = (((~tmp1)&0xff)+1); //convert from 2's complements but only the byte we care about
-                        sub = (tmp + sub);
+                        tmpp1 = (nes.getCPUmemory()[nes.indexedAddressingZeroPageX(nes.getCPUmemory()[nes.getpgrmCtr()])])&0xff;
+                        sub = (((~tmpp1)&0xff)+1); //convert from 2's complements but only the byte we care about
+                        sub = (tmpp + sub);
                         nes.increasePgrmCtr(1);
                         nes.increaseCycleCtr(4);
                         break;
                     case "CD" : // absolute
-                        tmp1 = (byte)(nes.getCPUmemory()[nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])]);
-                        sub = (((~tmp1)&0xff)+1); //convert from 2's complements but only the byte we care about
-                        sub = (tmp + sub);
+                        tmpp1 = (nes.getCPUmemory()[nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])])&0xff;
+                        sub = (((~tmpp1)&0xff)+1); //convert from 2's complements but only the byte we care about
+                        sub = (tmpp + sub);
                         nes.increasePgrmCtr(2);
                         nes.increaseCycleCtr(4);
                         break;
                     case "DD" : // absolute, x
-                        tmp1 = (byte)(nes.getCPUmemory()[nes.indexedAddressingAbsoluteX(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])]);
-                        sub = (((~tmp1)&0xff)+1); //convert from 2's complements but only the byte we care about
-                        sub = (tmp + sub);
+                        tmpp1 = (nes.getCPUmemory()[nes.indexedAddressingAbsoluteX(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])])&0xff;
+                        sub = (((~tmpp1)&0xff)+1); //convert from 2's complements but only the byte we care about
+                        sub = (tmpp + sub);
                         nes.increasePgrmCtr(2);
                         nes.increaseCycleCtr(4);
                         break;
                     case "D9" : // absolute, y
-                        tmp1 = (byte)(nes.getCPUmemory()[nes.indexedAddressingAbsoluteY(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])]);
-                        sub = (((~tmp1)&0xff)+1); //convert from 2's complements but only the byte we care about
-                        sub = (tmp + sub);
+                        tmpp1 = (nes.getCPUmemory()[nes.indexedAddressingAbsoluteY(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])])&0xff;
+                        sub = (((~tmpp1)&0xff)+1); //convert from 2's complements but only the byte we care about
+                        sub = (tmpp + sub);
                         nes.increasePgrmCtr(2);
                         nes.increaseCycleCtr(4);
                         break;
                     case "C1" : // (indirect, x)
-                        tmp1 = (byte)(nes.getCPUmemory()[nes.preIndexedIndirectAddressing(nes.getCPUmemory()[nes.getpgrmCtr()])]);
-                        sub = (((~tmp1)&0xff)+1); //convert from 2's complements but only the byte we care about
-                        sub = (tmp + sub);
+                        tmpp1 = (nes.getCPUmemory()[nes.preIndexedIndirectAddressing(nes.getCPUmemory()[nes.getpgrmCtr()])])&0xff;
+                        sub = (((~tmpp1)&0xff)+1); //convert from 2's complements but only the byte we care about
+                        sub = (tmpp + sub);
                         nes.increasePgrmCtr(1);
                         nes.increaseCycleCtr(6);
                         break;
                     case "D1" : // (indirect), y
-                        tmp1 = (byte)(nes.getCPUmemory()[nes.postIndexedIndirectAddressing(nes.getCPUmemory()[nes.getpgrmCtr()])]);
-                        sub = (((~tmp1)&0xff)+1); //convert from 2's complements but only the byte we care about
-                        sub = (tmp + sub);
+                        tmpp1 = (nes.getCPUmemory()[nes.postIndexedIndirectAddressing(nes.getCPUmemory()[nes.getpgrmCtr()])])&0xff;
+                        sub = (((~tmpp1)&0xff)+1); //convert from 2's complements but only the byte we care about
+                        sub = (tmpp + sub);
                         nes.increasePgrmCtr(1);
                         nes.increaseCycleCtr(5);
                         break;
@@ -1658,30 +1656,29 @@ public class Interpreter
                 }
                 break;
             case "E0" : case "E4" : case "EC" : // cpx
-                tmp = nes.getIndexRegX();
-                tmp1 = 0;
-                tmp2 = 0;
+                tmpp = nes.getIndexRegX();
+                tmpp1 = 0;
                 sub = 0;
                 nes.increasePgrmCtr(1);
                 switch (temp) {
                     case "E0" : // immediate
-                        tmp1 = (byte)(nes.getCPUmemory()[nes.getpgrmCtr()]);
-                        sub = (((~tmp1)&0xff)+1); //convert from 2's complements but only the byte we care about
-                        sub = (tmp + sub);
+                        tmpp1 = (nes.getCPUmemory()[nes.getpgrmCtr()])&0xff;
+                        sub = (((~tmpp1)&0xff)+1); //convert from 2's complements but only the byte we care about
+                        sub = (tmpp + sub);
                         nes.increasePgrmCtr(1);
                         nes.increaseCycleCtr(2);
                         break;
                     case "E4" : // zero page
-                        tmp1 = (byte)(nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]]);
-                        sub = (((~tmp1)&0xff)+1); //convert from 2's complements but only the byte we care about
-                        sub = (tmp + sub);
+                        tmpp1 = (nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]])&0xff;
+                        sub = (((~tmpp1)&0xff)+1); //convert from 2's complements but only the byte we care about
+                        sub = (tmpp + sub);
                         nes.increasePgrmCtr(1);
                         nes.increaseCycleCtr(3);
                         break;
                     case "EC" : // absolute
-                        tmp1 = (byte)(nes.getCPUmemory()[nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])]);
-                        sub = (((~tmp1)&0xff)+1); //convert from 2's complements but only the byte we care about
-                        sub = (tmp + sub);
+                        tmpp1 = (nes.getCPUmemory()[nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])])&0xff;
+                        sub = (((~tmpp1)&0xff)+1); //convert from 2's complements but only the byte we care about
+                        sub = (tmpp + sub);
                         nes.increasePgrmCtr(2);
                         nes.increaseCycleCtr(4);
                         break;
@@ -1707,30 +1704,33 @@ public class Interpreter
                 //nes.printInfo();
                 break;
             case "C0" : case "C4" : case "CC" : // cpy
-                tmp = nes.getIndexRegY();
-                tmp1 = 0;
-                tmp2 = 0;
+                tmpp = (nes.getIndexRegY()&0xff);
+                tmpp1 = 0;
                 sub = 0;
                 nes.increasePgrmCtr(1);
                 switch (temp) {
                     case "C0" : // immediate
-                        tmp1 = (byte)(nes.getCPUmemory()[nes.getpgrmCtr()]);
-                        sub = (((~tmp1)&0xff)+1); //convert from 2's complements but only the byte we care about
-                        sub = (tmp + sub);
+                        tmpp1 = (nes.getCPUmemory()[nes.getpgrmCtr()]&0xff);
+                        //System.out.println("Y: "+tmpp);
+                       // System.out.println("val: "+tmpp1);
+                        sub = (((~tmpp1)&0xff)+1); //convert from 2's complements but only the byte we care about
+                        //System.out.println("2's: "+sub);
+                        sub = (tmpp + sub);
+                        //System.out.println("ans:" +sub);
                         nes.increasePgrmCtr(1);
                         nes.increaseCycleCtr(2);
                         break;
                     case "C4" : // zero page
-                        tmp1 = (byte)(nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]]);
-                        sub = (((~tmp1)&0xff)+1); //convert from 2's complements but only the byte we care about
-                        sub = (tmp + sub);
+                        tmpp1 = (nes.getCPUmemory()[nes.getCPUmemory()[nes.getpgrmCtr()]])&0xff;
+                        sub = (((~tmpp1)&0xff)+1); //convert from 2's complements but only the byte we care about
+                        sub = (tmpp + sub);
                         nes.increasePgrmCtr(1);
                         nes.increaseCycleCtr(3);
                         break;
                     case "CC" : // absolute
-                        tmp1 = (byte)(nes.getCPUmemory()[nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])]);
-                        sub = (((~tmp1)&0xff)+1); //convert from 2's complements but only the byte we care about
-                        sub = (tmp + sub);
+                        tmpp1 = (nes.getCPUmemory()[nes.absoluteAddressing(nes.getCPUmemory()[nes.getpgrmCtr()], nes.getCPUmemory()[nes.getpgrmCtr()+1])])&0xff;
+                        sub = (((~tmpp1)&0xff)+1); //convert from 2's complements but only the byte we care about
+                        sub = (tmpp + sub);
                         nes.increasePgrmCtr(2);
                         nes.increaseCycleCtr(4);
                         break;
@@ -1833,6 +1833,7 @@ public class Interpreter
             case "49" : case "45" : case "55" : case "4D" :
             case "5D" : case "59" : case "41" : case "51" : // eor
                 tmp = nes.getAccumulator();
+                byte tmp1 = 0;
                 nes.increasePgrmCtr(1);
                 switch (temp) {
                     case "49" : // immediate
@@ -1967,7 +1968,7 @@ public class Interpreter
                 nes.increasePgrmCtr(1);
                 switch (temp) {
                     case "6C" : // indirect
-                        nes.setpgrmCtr(nes.preIndexedIndirectAddressing(nes.getCPUmemory()[nes.getpgrmCtr()]));                                           
+                        nes.setpgrmCtr(nes.indirectAddressing(nes.getCPUmemory()[nes.getpgrmCtr()],nes.getCPUmemory()[nes.getpgrmCtr()+1]));                                           
                         nes.setcycleCtr(nes.getcycleCtr()+5);
                         break;
                     case "4C" : // absolute
